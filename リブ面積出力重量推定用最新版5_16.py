@@ -696,9 +696,9 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 			discussP2_u=ribCap_u_ToNonVec[i+1]
 			lengthOfP1P2_u=((discussP1_u[0]-discussP2_u[0])**2+(discussP1_u[1]-discussP2_u[1])**2)**(1/2)
 			ribCapLength_u +=lengthOfP1P2_u
-
-			discussP1_d=ribCap_d_ToNonVec[i]
-			discussP2_d=ribCap_d_ToNonVec[i+1]
+		for k in range(len(ribCap_d_ToNonVec)-1):
+			discussP1_d=ribCap_d_ToNonVec[k]
+			discussP2_d=ribCap_d_ToNonVec[k+1]
 			lengthOfP1P2_d=((discussP1_d[0]-discussP2_d[0])**2+(discussP1_d[1]-discussP2_d[1])**2)**(1/2)
 			ribCapLength_d +=lengthOfP1P2_d
 		ribCap_total_Length=ribCapLength_u+ribCapLength_d
@@ -740,7 +740,7 @@ df = pd.DataFrame({
     'プランク長さ(mm)':excelLengthOfPlankTotal,
     'テーパー比':excelTeaperRatio,
 })
-df.to_excel('./0526test7.xlsx') #ここに出力したいファイル名を設定する
+df.to_excel('./0526test8.xlsx') #ここに出力したいファイル名を設定する
 
 print("completed")
 
