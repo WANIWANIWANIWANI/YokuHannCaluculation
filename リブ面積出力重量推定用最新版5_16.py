@@ -647,8 +647,10 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 		return 3.14*d/2*(dd+d)/2
 	def lengthOfketaanaShu():
 		#桁の短軸ｄ、桁の長軸ｄｄ＋ｄ
-		X=2*d+dd #短軸＋長軸
-		Y=dd     #短軸ー長軸
+		a=d/2
+		b=dd/2
+		X=2*a+b #短軸＋長軸
+		Y=b     #短軸ー長軸
 		Z=(Y/X)**2
 		W1=3*Z
 		W2=10+(4-3*Z)**(1/2)
@@ -738,7 +740,7 @@ df = pd.DataFrame({
     'プランク長さ(mm)':excelLengthOfPlankTotal,
     'テーパー比':excelTeaperRatio,
 })
-df.to_excel('./0526test6.xlsx') #ここに出力したいファイル名を設定する
+df.to_excel('./0526test7.xlsx') #ここに出力したいファイル名を設定する
 
 print("completed")
 
