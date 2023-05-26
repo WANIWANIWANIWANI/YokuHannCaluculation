@@ -710,7 +710,7 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 	areaMaruNikunuki   =caluculationOfAreaMaruNikunuki()#リブの円形肉抜き面積
 	totalAreaOfNikunuki=areaSankakuNikunuki+areaMaruNikunuki     #肉抜き面積の合計
 	areaKetaana        =areaKetaana() #桁穴の面積
-	areaTotalRibu      =areayokuGata-totalAreaOfNikunuki #最終的なリブ面積
+	areaTotalRibu      =areayokuGata-totalAreaOfNikunuki-areaKetaana #最終的なリブ面積
 	lengthOfKetaanaMawari=lengthOfketaanaShu()#桁穴周
 	lengthOfRibCaptotal       =lehgthOfRibCap() #リブキャップの長さ
 	lengthOfPlanktotal        =lengthOfPlank()
@@ -732,13 +732,13 @@ import pandas as pd
 df = pd.DataFrame({
     '肉抜き前リブ面積(mm2)': excelareayokuGata, 
     '肉抜き面積の合計(mm2)': excelareatotalAreaOfNikunuki,
-    '最終的なリブ面積(mm2)':excelareaTotalRibu,
+    '最終的なリブ面積（桁穴面積考慮済み）(mm2)':excelareaTotalRibu,
     '桁穴周(mm)':excellengthOfKetaanaMawari,
     'リブキャップ長さ(mm)':excelLengthOfRibCapTotal,
     'プランク長さ(mm)':excelLengthOfPlankTotal,
     'テーパー比':excelTeaperRatio,
 })
-df.to_excel('./0526test5.xlsx') #ここに出力したいファイル名を設定する
+df.to_excel('./0526test6.xlsx') #ここに出力したいファイル名を設定する
 
 print("completed")
 
