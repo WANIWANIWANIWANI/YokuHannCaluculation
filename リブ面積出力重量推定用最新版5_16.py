@@ -616,7 +616,7 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 	#計算式の定義
 	def caluculateOfareaYokugata():
 		areaYokugataUpper=-integrate.trapz(y_u,x_u)
-		areaYokugataDown=integrate.trapz(y_d,x_d)
+		areaYokugataDown=-integrate.trapz(y_d,x_d)
 		return areaYokugataUpper + areaYokugataDown
 	def caluculateOfAreaSankakuNikunuki():
 		(ax1,ay1)=(x_tl[0],y_tl[0])
@@ -738,7 +738,7 @@ df = pd.DataFrame({
     'プランク長さ(mm)':excelLengthOfPlankTotal,
     'テーパー比':excelTeaperRatio,
 })
-df.to_excel('./0526test3.xlsx') #ここに出力したいファイル名を設定する
+df.to_excel('./0526test5.xlsx') #ここに出力したいファイル名を設定する
 
 print("completed")
 
