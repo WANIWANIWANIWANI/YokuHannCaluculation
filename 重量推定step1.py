@@ -690,7 +690,7 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 			if (addition_array_ribCapU_nonVec[0] >=x_plank_u):
 				ribCap_u_ToNonVec.append(addition_array_ribCapU_nonVec)
 			if (additional_array_ribCapD_nonVec[0] >=x_plank_d):
-				ribCap_d_ToNonVec.append(addition_array_ribCapU_nonVec)
+				ribCap_d_ToNonVec.append(additional_array_ribCapD_nonVec)
 		for i in range(len(ribCap_u_ToNonVec)-1): #隣り合う２点間の距離を足し合わせて曲線の長さとした
 			discussP1_u=ribCap_u_ToNonVec[i]
 			discussP2_u=ribCap_u_ToNonVec[i+1]
