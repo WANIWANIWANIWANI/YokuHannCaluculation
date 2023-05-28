@@ -12,7 +12,7 @@
 
 #ファイル関連
 #出力するテキストファイルの名前。拡張子は不要
-ProjectName = "0528testKouennzaiTest9"
+ProjectName = "0528testKouennzaiTest10"
 #翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
 
@@ -24,18 +24,12 @@ EndChord = 700
 RootDelta = 0
 
 EndDelta = 0
-#端、根の桁位置[%]
-RootR = 31
-EndR = 31
+
 #端、根の翼型のファイル名 datファイルを入れる
 RootFoilName = "NACA0013.dat"
 EndFoilName = "NACA0013.dat"
 #リブ枚数
 n = 3
-#何翼?
-PlaneNumber = "4"
-#半リブあり?
-use_half = False
 #後縁補強材上辺開始点(翼弦に対する％)
 startPointOfKouennHokyou_U=75
 #後縁補強材下辺開始点(翼弦に対する％)
@@ -43,62 +37,14 @@ startPointOfKouennHokyou_D=80
 
 
 #リブ以外の要素関連
-#プランク厚さ[mm]
-tp = 2.7
-#ストリンガー断面の一辺[mm]
-e = 5
 #リブキャップ厚さ[mm]
 t = 1
-#桁径[mm]	楕円の短軸方向
-d = 31.388
-#桁径		楕円の長軸-短軸 円なら0
-dd = 31.388 - d
-#アセンブリ棒径[mm]
-da = 30#元は30
-#アセンブリ棒余白[mm]
-h = 7
 #後縁材の前縁側の辺の長さ[mm]
 ht = 8#元は8
-#前縁材があるか boolean
-use_l = False
-#前縁材の端線、水平線,offset線の出力
-use_la = False
-#前縁材と翼型の前縁のずれ[mm]
-lo = 10
-#前縁材のoffset[mm]
-offset_l = 1
-#三角肉抜き最小骨格幅[mm]
-w_tri = 15
-#三角肉抜き端半径[mm]
-r_tri = 10
-#前縁-肉抜き 長さ[%]
-first_light_r = 10
-#丸肉抜き 最小骨格幅[mm]
-w_circle = 15
 
-#位置関連
-#プランク上開始位置[%]
-rpu = 60
-#プランク下開始位置[%] r plank downside
-rpd = EndR - 100* (d/2 + 30)/EndChord
-#ストリンガー下後縁側位置[%] r stringer downside trailing edge
-rsdt = rpd + 20
-#ストリンガー前縁[mm] x stringer leading edge
-xsl = 20+e
 
-#設定値はあざみ野の翼を参考にしている
-#ストリンガー位置翼上部[%]
-stringerU1Rate=4
-stringerU2Rate=14
-stringerU3Rate=57
-#ストリンガー位置翼下部[%]
-stringerD1Rate=2
-stringerD2Rate=6
-stringerD3Rate=rpd-3
 
 #機体諸元
-#0翼取り付け角[°]
-alpha = -6.5
 #後退角(リブ厚みの修正用)[°]
 sweep = 0
 
@@ -115,9 +61,7 @@ inter = interp.Akima1DInterpolator
 import math
 sin,cos,tan,atan2 = (math.sin, math.cos, math.tan, math.atan2)
 from scipy.optimize import fsolve
-import warnings
-import csv
-import time
+
 
 os.chdir(Directory)		#ディレクトリ移動
 
@@ -210,21 +154,6 @@ def line(file,P1,P2,O=vector(0,0)):
 	"""
 	file.write(f"line\n{P1.x+O.x},{P1.y+O.y}\n{P2.x+O.x},{P2.y+O.y}\n\n")
 
-def div_P(P1,P2,known,index):
-	"""
-	P1,P2を結ぶ直線上にP3があってP3.index=knownがわかっているとき、その点をvectorとして返す。
-	index=0のときx、1のときy
-	"""
-	if index==0:
-		return div_P2(P1,P2, (known-P1.x)/(P2.x-P1.x))
-	if index==1:
-		return div_P2(P1,P2, (known-P1.y)/(P2.y-P1.y))
-
-def div_P2(P1,P2,ratio):
-	"""
-	P1,P2をP1P2:P1P3=1:ratioに内分、外分する点P3の座標をvectorとして返す。
-	"""
-	return P1 + (P2-P1)*ratio
 
 
 def offset(l,t,updown,end = 0):
@@ -359,17 +288,13 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 	f_d = inter(x_d, y_d)
 	del s
 	
+    ##後縁補強材のデータ作成
 	x_stratPointOfKouennzai_U=c*(startPointOfKouennHokyou_U/100)*cos(sweep)
 	x_stratPointOfKouennzai_D=c*(startPointOfKouennHokyou_D/100)*cos(sweep)
 	KouennHokyou_U = offset([FoilU[i] for i in range(2,len(FoilU)) if FoilU[i-2].x >= x_stratPointOfKouennzai_U], t, 0)
 	KouennHokyou_D = offset([FoilD[i] for i in range(len(FoilD)-2) if FoilD[i+2].x >= x_stratPointOfKouennzai_D], t, 0)
 	
-    #リブキャップの点のリストの出力 プランクの開始点より後縁側であることを利用
-	RibCap_uPs = offset([FoilU[i] for i in range(2,len(FoilU)) ], t, 0)
-	RibCap_dPs = offset([FoilD[i] for i in range(len(FoilD)-2)], t, 0)
-	
-    #後縁材の出力
-	#後縁材の上側の一点を求める。下をoffsetした関数と上の関数の交点とする。
+    #後縁材との接続ラインを表示する
 	FoilD_offsetPs = offset(FoilD[5:], ht, 0)
 	s = numpy.linspace(FoilD_offsetPs[0].x, FoilD_offsetPs[-1].x)
 	f_dOffset = inter(to_numpy_x(FoilD_offsetPs), to_numpy_y(FoilD_offsetPs))
@@ -380,12 +305,10 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 	TrailD = offset([EdgeTrailU[0],TrailU,EdgeTrailU[1]], ht, 1)[0]
 	del s
 	
-
-	
+    #後縁補強材の出力
 	color(file, 0, 0, 0)
 	line(file, TrailU, TrailD, O)
 	color(file, 0, 0, 0)
-	# line(file,KouennHokyou_U[0],KouennHokyou_D[-1],O)
 	line(file,KouennHokyou_U[-1],KouennHokyou_D[0],O)
 	spline(file,KouennHokyou_D,O)
 	spline(file,KouennHokyou_U,O)
