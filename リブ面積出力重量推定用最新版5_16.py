@@ -616,7 +616,7 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 	#計算式の定義
 	def caluculateOfareaYokugata():
 		areaYokugataUpper=-integrate.trapz(y_u,x_u)
-		areaYokugataDown=integrate.trapz(y_d,x_d)
+		areaYokugataDown=-integrate.trapz(y_d,x_d)
 		return areaYokugataUpper + areaYokugataDown
 	def caluculateOfAreaSankakuNikunuki():
 		(ax1,ay1)=(x_tl[0],y_tl[0])
@@ -647,8 +647,10 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 		return 3.14*d/2*(dd+d)/2
 	def lengthOfketaanaShu():
 		#桁の短軸ｄ、桁の長軸ｄｄ＋ｄ
-		X=2*d+dd #短軸＋長軸
-		Y=dd     #短軸ー長軸
+		a=d/2
+		b=dd/2
+		X=2*a+b #短軸＋長軸
+		Y=b     #短軸ー長軸
 		Z=(Y/X)**2
 		W1=3*Z
 		W2=10+(4-3*Z)**(1/2)
@@ -694,9 +696,9 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 			discussP2_u=ribCap_u_ToNonVec[i+1]
 			lengthOfP1P2_u=((discussP1_u[0]-discussP2_u[0])**2+(discussP1_u[1]-discussP2_u[1])**2)**(1/2)
 			ribCapLength_u +=lengthOfP1P2_u
-
-			discussP1_d=ribCap_d_ToNonVec[i]
-			discussP2_d=ribCap_d_ToNonVec[i+1]
+		for k in range(len(ribCap_d_ToNonVec)-1):
+			discussP1_d=ribCap_d_ToNonVec[k]
+			discussP2_d=ribCap_d_ToNonVec[k+1]
 			lengthOfP1P2_d=((discussP1_d[0]-discussP2_d[0])**2+(discussP1_d[1]-discussP2_d[1])**2)**(1/2)
 			ribCapLength_d +=lengthOfP1P2_d
 		ribCap_total_Length=ribCapLength_u+ribCapLength_d
@@ -710,7 +712,7 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 	areaMaruNikunuki   =caluculationOfAreaMaruNikunuki()#リブの円形肉抜き面積
 	totalAreaOfNikunuki=areaSankakuNikunuki+areaMaruNikunuki     #肉抜き面積の合計
 	areaKetaana        =areaKetaana() #桁穴の面積
-	areaTotalRibu      =areayokuGata-totalAreaOfNikunuki #最終的なリブ面積
+	areaTotalRibu      =areayokuGata-totalAreaOfNikunuki-areaKetaana #最終的なリブ面積
 	lengthOfKetaanaMawari=lengthOfketaanaShu()#桁穴周
 	lengthOfRibCaptotal       =lehgthOfRibCap() #リブキャップの長さ
 	lengthOfPlanktotal        =lengthOfPlank()
@@ -732,13 +734,13 @@ import pandas as pd
 df = pd.DataFrame({
     '肉抜き前リブ面積(mm2)': excelareayokuGata, 
     '肉抜き面積の合計(mm2)': excelareatotalAreaOfNikunuki,
-    '最終的なリブ面積(mm2)':excelareaTotalRibu,
+    '最終的なリブ面積（桁穴面積考慮済み）(mm2)':excelareaTotalRibu,
     '桁穴周(mm)':excellengthOfKetaanaMawari,
     'リブキャップ長さ(mm)':excelLengthOfRibCapTotal,
     'プランク長さ(mm)':excelLengthOfPlankTotal,
     'テーパー比':excelTeaperRatio,
 })
-df.to_excel('./0526test3.xlsx') #ここに出力したいファイル名を設定する
+df.to_excel('./0526test8.xlsx') #ここに出力したいファイル名を設定する
 
 print("completed")
 
