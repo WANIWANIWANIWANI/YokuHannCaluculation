@@ -1,5 +1,3 @@
-
-
 #-------------------------------------------------------------------------
 #使いかた
 #下記Directoryに翼型をすべていれておく。必要に応じて変える。
@@ -13,10 +11,9 @@
 #設定
 
 #ファイル関連
-#出力するテキストファイルの名前。拡張子は不要(/などを用いると上手くいかないので注意)
-ProjectName = "test3"
 #翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
+ProjectName="aaa"
 
 #翼関連
 #端、根の翼弦長(流れ方向)[mm]
@@ -24,7 +21,7 @@ RootChord = 1288
 EndChord = 1288
 #端、根のねじり上げ(流れ方向)[°]
 RootDelta =0
-EndDelta =  0
+EndDelta = 0
 #端、根の桁位置[%]
 RootR = 31
 EndR = 31
@@ -73,6 +70,8 @@ first_light_r = 8
 #丸肉抜き 最小骨格幅[mm]
 w_circle = 20
 
+
+##適当に入力してもOK数値計算には関係ない
 #位置関連
 #プランク上開始位置[%]
 rpu = 60
@@ -104,9 +103,6 @@ inter = interp.Akima1DInterpolator
 import math
 sin,cos,tan,atan2 = (math.sin, math.cos, math.tan, math.atan2)
 from scipy.optimize import fsolve
-import warnings
-import csv
-import time
 import numpy as np
 
 os.chdir(Directory)		#ディレクトリ移動
@@ -518,15 +514,6 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 	#リブキャップの点のリストの出力 プランクの開始点より後縁側であることを利用
 	RibCap_uPs = offset([FoilU[i] for i in range(2,len(FoilU)) if FoilU[i-2].x >= x_plank_u], t, 0)
 	RibCap_dPs = offset([FoilD[i] for i in range(len(FoilD)-2) if FoilD[i+2].x >= x_plank_d], t, 0)
-	#ストリンガーの出力
-	StringerU = stringer(div_P(PlankPs[0], PlankPs[1], x_plank_u, 0), PlankPs[1], e)
-	StringerDL = stringer(div_P(PlankPs[-1], PlankPs[-2], x_plank_d, 0), PlankPs[-2], e, R=True)				#leading edge
-	EdgeDT = [RibCap_dPs[i] for i in range(1,len(RibCap_dPs)) if RibCap_dPs[i-1].x <= x_stringer_dt][-2:]		#StringerDT.Aを挟む点
-	StringerDT = stringer(div_P(EdgeDT[0], EdgeDT[1], x_stringer_dt, 0), EdgeDT[0], e, R=True)					#trailing edge
-
-	#プランク線の端を切り取る
-	del PlankPs[0], PlankPs[-1]
-	PlankPs = [StringerU.A] + PlankPs + [StringerDL.A]		#端点をストリンガーの頂点と一致させる。
 
 	#桁穴の出力 y座標は25%のcamber位置で固定
 	delta = RootDelta + (EndDelta - RootDelta)* r
@@ -534,11 +521,6 @@ for k in range(1,n+1):#range(1,n+1):				 	#根から k 枚目のリブ
 	Pipe_C = vector(x_pipe, f_camber(x_25pc))
 	Pipe = ellipse(Pipe_C, Pipe_C + vector(0,1).rotate(RibAngle, "radian")*(d+dd)/2, d/2)
 
-	#水平、鉛直線関連
-	hlineP1 = Pipe_C + vector(0,1).rotate(RibAngle, "radian").i *c*0.35
-	hlineP2 = Pipe_C - vector(0,1).rotate(RibAngle, "radian").i *c*0.35
-	vlineP1 = Pipe_C + vector(1,0).rotate(RibAngle, "radian").i *c*0.07
-	vlineP2 = Pipe_C - vector(1,0).rotate(RibAngle, "radian").i *c*0.07
 
 	#アセンブリ棒穴の出力
 	Assembly = circle(da/2, Oa + Pipe_C)
@@ -740,7 +722,7 @@ df = pd.DataFrame({
     'プランク長さ(mm)':excelLengthOfPlankTotal,
     'テーパー比':excelTeaperRatio,
 })
-df.to_excel('./0526test8.xlsx') #ここに出力したいファイル名を設定する
+df.to_excel('./0530test2.xlsx') #ここに出力したいファイル名を設定する
 
 print("completed")
 

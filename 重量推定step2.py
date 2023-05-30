@@ -1,27 +1,29 @@
 import pandas as pd
 #各定数を以下で設定する（試作）
 ribFixKetaanaDensity=0.1 #桁穴周りの接着剤の密度（g/(桁穴1mm)
-tannribuHokyouDensity=0.02#端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
-ribCapDensity=0.01 #リブキャップの密度（g/リブキャップ１mm²）
+tannribuHokyouDensity=0.000335#端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
+ribCapDensity=0.000335 #リブキャップの密度（g/リブキャップ１mm²）
+densityOfKouennzai=0.0001294   #後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
+densityOfStringer    =0.0001294      #ストリンガーの密度（ｇ/mm³） つまり、2024的にはバルサの密度を書けばよい
+
+#１次構造
+weightOfketa=0   #桁の重量(g)
+weightOfFrange=0 #フランジの重量
+weightOfKannzashi=0 #かんざしの重量
 
 #既知の値
-weightOfketa=1000   #桁の重量(g)
-weightOfFrange=200 #フランジの重量
-weightOfKannzashi=200 #かんざしの重量
-sutairoDensity=0.0000031 #スタイロの密度(g/mm3)
-densityOfKouennzai=0.0001   #後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
-densityOfStringer    =0.0001      #ストリンガーの密度（ｇ/mm³） つまり、2024的にはバルサの密度を書けばよい
-ketaLengthFrangeinsideToFrangeInside=20000 #桁長さ
+sutairoDensity=0.000031 #スタイロの密度(g/mm3)
+ketaLengthFrangeinsideToFrangeInside=2000 #桁長さ
 NumberOfStringer=6                 #ストリンガーの本数
 lengthOfstringerSide1=5       #ストリンガーの一辺の長さ
 lengthOFStringerSide2=5      #ストリンガーの一辺の長さ
 densityOfFilm    =0.0000002   #フィルムの密度（ｇ/mm³）
-crosSectionalAreaKouennzai=100#後縁材の断面積（mm²）
+crosSectionalAreaKouennzai=200 #後縁材の断面積（mm²）
 
 #読み取りファイルと書き出しファイルの設定
 yokuNumber="2翼" #何翼？（数字＋翼）
-readingFilePath=r"C:\Users\ryota2002\Documents\libu\0526test8.xlsx"
-exportReadingFilepath='./0528.test7.xlsx'
+readingFilePath=r"C:\Users\ryota2002\Documents\libu\0530test2.xlsx"
+exportReadingFilepath='./0530test8output.xlsx'
 
 #Excelファイルの取り込み
 filename = readingFilePath
@@ -62,6 +64,7 @@ def tannRibuHokyou():
      if(ribuTotalData[0][7]==1):
            areaHokyouArea=ribuTotalData[0][2]*2
            weightOfRibuHokyouTannribu=areaHokyouArea*tannribuHokyouDensity
+           totalWeightOfEndRibHokyou +=weightOfRibuHokyouTannribu
      if(ribuTotalData[0][7]==0):
            areaHokyouArea=ribuTotalData[0][0]*2
            weightOfRibuHokyouTannribu=areaHokyouArea*tannribuHokyouDensity
@@ -112,7 +115,7 @@ totalWeightOfYoku=totalWeightOf1Dstructure+totalWeightOf2Dstructure
 df = pd.DataFrame({
      '翼番号':[yokuNumber],
     'スタイロ重量(g)': [totalWeightOfRib], 
-    'リブ接着剤の重量(g)': [totalWeightOfRibFixingAroundKetaMawari],
+    'アセンブリ接着剤の重量(g)': [totalWeightOfRibFixingAroundKetaMawari],
     '端リブ補強材の重量(g)':[totalWeightOfRibTannribuHokyou],
     'リブキャップの重量(g)':[totalWeightOfRibCap],
     'ストリンガーの重量(g)':[totalWeightOfStringer],
