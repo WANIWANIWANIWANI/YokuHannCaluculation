@@ -1,12 +1,12 @@
 import pandas as pd
 
 # 各定数を以下で設定する（試作）
-ribFixKetaanaDensity = 0.1  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
+ribFixKetaanaDensity = 0  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
 tannribuHokyouDensity = 0.000335  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
 ribCapDensity = 0.000335  # リブキャップの密度（g/リブキャップ１mm²）
 densityOfKouennzai = 0.0001294  # 後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
 densityOfStringer = 0.0001294  # ストリンガーの密度（ｇ/mm³） つまり、2024的にはバルサの密度を書けばよい
-densityOfRyoumennteap = 0.002  # 両面テープの密度（g/mm2）
+densityOfRyoumennteap = 0  # 両面テープの密度（g/mm2）
 
 # １次構造
 weightOfketa = 0  # 桁の重量(g)
@@ -26,7 +26,7 @@ crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
 # 読み取りファイルと書き出しファイルの設定
 yokuNumber = "2翼"  # 何翼？（数字＋翼）
-readingFilePath = r"C:\Users\ryota2002\Documents\libu\0530test2.xlsx"
+readingFilePath = r"C:\Users\ryota2002\Documents\libu\0530test1.xlsx"
 exportReadingFilepath = "./0530test8output.xlsx"
 
 # Excelファイルの取り込み
