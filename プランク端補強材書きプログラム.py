@@ -48,28 +48,7 @@ t = 1
 d = 31.388
 # 桁径		楕円の長軸-短軸 円なら0
 dd = 31.388 - d
-# アセンブリ棒径[mm]
-da = 30  # 元は30
-# アセンブリ棒余白[mm]
-h = 7
-# 後縁材の前縁側の辺の長さ[mm]
-ht = 8  # 元は8
-# 前縁材があるか boolean
-use_l = False
-# 前縁材の端線、水平線,offset線の出力
-use_la = False
-# 前縁材と翼型の前縁のずれ[mm]
-lo = 10
-# 前縁材のoffset[mm]
-offset_l = 1
-# 三角肉抜き最小骨格幅[mm]
-w_tri = 15
-# 三角肉抜き端半径[mm]
-r_tri = 10
-# 前縁-肉抜き 長さ[%]
-first_light_r = 10
-# 丸肉抜き 最小骨格幅[mm]
-w_circle = 15
+
 
 # 位置関連
 # プランク下開始位置[%] r plank downside
@@ -234,27 +213,6 @@ class stringer:
         return self.B + self.D - self.A
 
 
-class circle:
-    """
-    円の半径と中心を保持するオブジェクト
-    """
-
-    def __init__(self, r, O):
-        self.r = r
-        self.O = O
-
-
-class ellipse:
-    """
-    中心座標C、長軸上の一点P、短軸と中心の距離b を保持するオブジェクト
-    """
-
-    def __init__(self, C, P, b):
-        self.C = C
-        self.P = P
-        self.b = b
-
-
 def spline(file, l, O=vector(0, 0)):
     """
     リストl=[vector,vector,...]のspline曲線を描くコマンドをfileに出力
@@ -273,27 +231,6 @@ def line(file, P1, P2, O=vector(0, 0)):
     file.write(f"line\n{P1.x+O.x},{P1.y+O.y}\n{P2.x+O.x},{P2.y+O.y}\n\n")
 
 
-def WriteEllipse(file, ell, O=vector(0, 0)):
-    file.write(
-        f"ellipse\nc\n{ell.C.x+O.x},{ell.C.y+O.y}\n{ell.P.x+O.x},{ell.P.y+O.y}\n{ell.b}\n"
-    )
-
-
-def WriteCircle(file, circle, O=vector(0, 0), WriteCenter=True):
-    """circleオブジェクトを出力するコマンドを出力"""
-    file.write(
-        """circle
-{xc},{yc}
-{r}
-""".format(
-            xc=circle.O.x + O.x, yc=circle.O.y + O.y, r=circle.r
-        )
-    )
-    if WriteCenter:
-        line(file, circle.O + vector(0, 5), circle.O + vector(0, -5), O)
-        line(file, circle.O + vector(5, 0), circle.O + vector(-5, 0), O)
-
-
 def div_P(P1, P2, known, index):
     """
     P1,P2を結ぶ直線上にP3があってP3.index=knownがわかっているとき、その点をvectorとして返す。
@@ -310,37 +247,6 @@ def div_P2(P1, P2, ratio):
     P1,P2をP1P2:P1P3=1:ratioに内分、外分する点P3の座標をvectorとして返す。
     """
     return P1 + (P2 - P1) * ratio
-
-
-def WriteStringer(file, stringer, O=vector(0, 0)):
-    """上のstringerを入力にしてこれを描くコマンドを出力"""
-    file.write(
-        """line
-{ax},{ay}
-{bx},{by}
-{cx},{cy}
-{dx},{dy}
-{ax},{ay}
-
-line
-{ax},{ay}
-{cx},{cy}
-
-line
-{bx},{by}
-{dx},{dy}
-
-""".format(
-            ax=stringer.A.x + O.x,
-            ay=stringer.A.y + O.y,
-            bx=stringer.B.x + O.x,
-            by=stringer.B.y + O.y,
-            cx=stringer.C.x + O.x,
-            cy=stringer.C.y + O.y,
-            dx=stringer.D.x + O.x,
-            dy=stringer.D.y + O.y,
-        )
-    )
 
 
 def offset(l, t, updown, end=0):
@@ -417,82 +323,6 @@ def arrayRotate(x, inputArray):
     v = numpy.array(inputArray)
     w = numpy.dot(rot, v)
     return w
-
-
-def relation(Ps, r, O):
-    """
-    半径r、中心Oの円とPsがかぶっていないとき"Separated"
-    かぶっていてPsが下にある時"Downside"、上にある時"Upside"を返す
-    """
-    for P in Ps:
-        if abs(O - P) > r:  # OP > rならPは円の外
-            pass
-        elif O.y > P.y:  # 円の中で、下のほうがかぶっているとき
-            print("距離が" + str(abs(O - P)))
-            return "Downside"
-        else:
-            print("距離が" + str(abs(O - P)))
-            return "Upside"
-    return "Separated"
-
-
-def define_Oa(
-    EndFoilPs,
-    RootFoilPs,
-    da,
-    h,
-    EndPipeO,
-    RootPipeO,
-    sharpness=0.1,
-    StartO=vector(0, 0),
-):
-    """
-    EndFoilPsでも、RootFoilPsでもh以上の余白を持ったアセンブリ棒穴(直径da)の中心のうち最も後方にあるものを求める
-    原点は桁の中心
-    FoilPsはvectorのリスト
-    First_Oは翼内に入っている必要がある。
-    桁穴+StartOの地点から試行できる
-    sharpnessの精度で返す
-    """
-    # 円の半径に使う
-    r = da / 2 + h
-    FoilPs = [EndFoilPs, RootFoilPs]
-    print(str(FoilPs[0][0]) + str(FoilPs[1][0]))
-    Os = [EndPipeO, RootPipeO]
-
-    ret = [0, 0]
-    for i in range(2):
-        dx = 2 * r  # 最初からdx=sharpnessでもいいが、収束を速くする
-        current_O = Os[i] + StartO  # 前縁原点
-        PastRelation = 0  # 過去の値を保持して比較する
-        while True:
-            Relation = relation(FoilPs[i], r, current_O)
-            if Relation == "Separated":
-                # 穴が翼型内ならdxだけ右にずらす
-                current_O += vector(dx, 0)
-            elif dx == 2 * r:
-                # まだ精度が悪いとき、一つ前に戻して精度を上げる
-                current_O -= vector(dx, 0)
-                dx = sharpness
-            elif (PastRelation != 0) and (Relation != PastRelation):
-                # 上下に行ってもはみ出るとき
-                ret[i] = current_O - Os[i]  # 原点を桁の中心に
-                break
-            elif Relation == "Downside":
-                # 穴が翼型からはみ出たが、dxだけ上に行くとはみ出ないとき
-                current_O += vector(0, dx)
-                PastRelation = Relation
-            elif Relation == "Upside":
-                # dxだけ下に行くとはみ出ないとき
-                current_O -= vector(0, dx)
-                PastRelation = Relation
-            else:
-                print("define_Oaに不明なエラー")
-        if (
-            relation(FoilPs[1], r, ret[0] + Os[1]) == "Separated"
-        ):  # ret[0]がRootでも中に入っていたら
-            return ret[0]
-    return ret[1]
 
 
 def WriteText(file, O, text, height=20, angle=0):
@@ -725,5 +555,4 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     line(file, P4_Vec, P6_Vec, O)
     spline(file, planktannHokyouArrayOfRibCap_u, O)
     line(file, P7_Vec, P5_Vec, O)
-
 print("completed")
