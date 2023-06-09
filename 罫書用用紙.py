@@ -35,10 +35,10 @@ def color(file, r, g, b):
 
 # A4用紙の外形を書く
 color(file, 0, 0, 255)
-line(file, [0, 0], [210, 0])
-line(file, [210, 0], [210, 297])
-line(file, [210, 297], [0, 297])
-line(file, [0, 297], [0, 0])
+line(file, [0, 0], [horizonalLengt, 0])
+line(file, [horizonalLengt, 0], [horizonalLengt, verticalLength])
+line(file, [horizonalLengt, verticalLength], [0, verticalLength])
+line(file, [0, verticalLength], [0, 0])
 
 # １枚から取り出す罫書用紙の枚数を基に長さを計算
 marginRight = 10
