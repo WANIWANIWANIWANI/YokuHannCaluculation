@@ -582,8 +582,7 @@ excelareaTotalRibu = []
 excellengthOfKetaanaMawari = []
 excelLengthOfRibCapTotal = []
 excelLengthOfPlankTotal = []
-excelTeaperRatio = []
-excelLengthOfKetaCenterToKouenn = []
+excelKouennHokyou = []
 
 
 O = vector(0, 0)  # それぞれのリブの前縁のy座標
@@ -811,8 +810,14 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     def caluculationOfareaKouennHokyou():
         areaKouennHokyouUpper = -integrate.trapz(KouennHokyou_U_Y, KouennHokyou_U_X)
         areaKouennHokyouDown = -integrate.trapz(KouennHokyou_D_Y, KouennHokyou_D_X)
-        print(areaKouennHokyouUpper + areaKouennHokyouDown)
-        return areaKouennHokyouUpper + areaKouennHokyouDown
+        # 積分した面積から一部を引く
+        # 引く面積をざっくりと近似（翼弦長の差分＊上下の後縁開始点のｙ座標の差分＊0.50）
+        subtractionArea = (
+            abs(x_stratPointOfKouennzai_U - x_stratPointOfKouennzai_D)
+            * abs(KouennHokyou_U_Y[0] - KouennHokyou_D_Y[0])
+            * 0.50
+        )
+        return areaKouennHokyouUpper + areaKouennHokyouDown - subtractionArea
 
     caluculationOfareaKouennHokyou()
 
@@ -947,7 +952,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     lengthOfKetaanaMawari = lengthOfketaanaShu()  # 桁穴周
     lengthOfRibCaptotal = lehgthOfRibCap()  # リブキャップの長さ
     lengthOfPlanktotal = lengthOfPlank()
-    teaperRatio = teaperRation()
+    areaKouennHokyou = caluculationOfareaKouennHokyou()
 
     # excel出力用リストにまとめる
     excelareayokuGata.append(areayokuGata)
@@ -956,8 +961,8 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     excellengthOfKetaanaMawari.append(lengthOfKetaanaMawari)
     excelLengthOfRibCapTotal.append(lengthOfRibCaptotal)
     excelLengthOfPlankTotal.append(lengthOfPlanktotal)
-    excelTeaperRatio.append(teaperRatio)
-    excelLengthOfKetaCenterToKouenn.append(excelLengthOfKetaCenterToKouenn)
+    excelKouennHokyou.append(areaKouennHokyou)
+
 
 # excelファイルへの書き出し
 import pandas as pd
@@ -970,9 +975,9 @@ df = pd.DataFrame(
         "桁穴周(mm)": excellengthOfKetaanaMawari,
         "リブキャップ長さ(mm)": excelLengthOfRibCapTotal,
         "プランク長さ(mm)": excelLengthOfPlankTotal,
-        "テーパー比": excelTeaperRatio,
+        "後縁補強材の面積": excelKouennHokyou,
     }
 )
-df.to_excel("./0530test3.xlsx")  # ここに出力したいファイル名を設定する
+df.to_excel("./0609test1.xlsx")  # ここに出力したいファイル名を設定する
 
 print("completed")
