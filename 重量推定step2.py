@@ -1,11 +1,12 @@
 import pandas as pd
 
 # 各定数を以下で設定する（試作）
-ribFixKetaanaDensity = 0.1  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
+ribFixKetaanaDensity = 0  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
 tannribuHokyouDensity = 0.000335  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
 ribCapDensity = 0.000335  # リブキャップの密度（g/リブキャップ１mm²）
 densityOfKouennzai = 0.0001294  # 後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
 densityOfStringer = 0.0001294  # ストリンガーの密度（ｇ/mm³） つまり、2024的にはバルサの密度を書けばよい
+densityOfRyoumennteap = 0  # 両面テープの密度（g/mm2）
 
 # １次構造
 weightOfketa = 0  # 桁の重量(g)
@@ -13,6 +14,8 @@ weightOfFrange = 0  # フランジの重量
 weightOfKannzashi = 0  # かんざしの重量
 
 # 既知の値
+lengthOfKeta = 2000  # 桁の長さ
+numberOfRyoumennteapForVerticalForYokugenn = 7  # 翼弦に対して垂直な方向の両面テープ数
 sutairoDensity = 0.000031  # スタイロの密度(g/mm3)
 ketaLengthFrangeinsideToFrangeInside = 2000  # 桁長さ
 NumberOfStringer = 6  # ストリンガーの本数
@@ -23,8 +26,8 @@ crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
 # 読み取りファイルと書き出しファイルの設定
 yokuNumber = "2翼"  # 何翼？（数字＋翼）
-readingFilePath = r"C:\Users\ryota2002\Documents\libu\0609test1.xlsx"
-exportReadingFilepath = "./0609testoutput1.xlsx"
+readingFilePath = r"C:\Users\ryota2002\Documents\libu\0530test1.xlsx"
+exportReadingFilepath = "./0530test8output.xlsx"
 
 # Excelファイルの取り込み
 filename = readingFilePath
@@ -146,6 +149,20 @@ def weightOf1Dstructure():
     return weightOfketa + weightOfFrange + weightOfKannzashi
 
 
+def weightOfRyoumennTeap():  # 両面テープの重量 ここについては、両面テープをはる位置によって要修正
+    areaRyoumennTeap = 0  # 両面テープの面積を保持する変数
+    for ribDate in ribuTotalData:
+        ribRyoumennTeapArea = (ribDate[4] + ribDate[5]) * ribDate[8]  # リブの側面積
+        areaRyoumennTeap += ribRyoumennTeapArea
+    ribteapHorizonalForYokugann = (
+        lengthOfKeta
+        * numberOfRyoumennteapForVerticalForYokugenn
+        * lengthOfstringerSide1
+    )  # 桁に対して平行な両面テープ本数
+    areaRyoumennTeap += ribteapHorizonalForYokugann
+    return areaRyoumennTeap * densityOfRyoumennteap
+
+
 # excelファイル出力用の値が保持される変数
 totalWeightOfRib = ribuWeight()
 totalWeightOfRibFixingAroundKetaMawari = ribuFixWeight()
@@ -156,6 +173,7 @@ totalWeightOfPlank = weightOfPlank()
 totalWeightOfStringer = weightOfStringer()
 totalWeightOfFilm = filmWeight()
 totalWeightOfKouennzai = weightOfKoennzai()
+totalWeightOfRyoumennTeap = weightOfRyoumennTeap()
 totalWeightOf1Dstructure = weightOf1Dstructure()
 totalWeightOf2Dstructure = (
     totalWeightOfRibFixingAroundKetaMawari
@@ -165,6 +183,7 @@ totalWeightOf2Dstructure = (
     + totalWeightOfPlank
     + totalWeightOfFilm
     + totalWeightOfKouennzai
+    + totalWeightOfRyoumennTeap
 )
 totalWeightOfYoku = totalWeightOf1Dstructure + totalWeightOf2Dstructure
 # excelファイルへの書き出し
@@ -180,6 +199,7 @@ df = pd.DataFrame(
         "プランクの重量(g)": [totalWeightOfPlank],
         "フィルムの重量(g)": [totalWeightOfFilm],
         "後縁材の重量(g)": [totalWeightOfKouennzai],
+        "両面テープの重量(g)": [totalWeightOfRyoumennTeap],
         "2次構造の重量(g)": [totalWeightOf2Dstructure],
         "1次構造の重量(g)": [totalWeightOf1Dstructure],
         "翼の総重量(g)": [totalWeightOfYoku],

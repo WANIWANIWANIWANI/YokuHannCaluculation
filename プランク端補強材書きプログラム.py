@@ -12,7 +12,7 @@
 
 # ファイル関連
 # 出力するテキストファイルの名前。拡張子は不要
-ProjectName = "0528testKouennzaiTest10"
+ProjectName = "0602test"
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
 
@@ -24,26 +24,54 @@ EndChord = 700
 RootDelta = 0
 
 EndDelta = 0
-
+# 端、根の桁位置[%]
+RootR = 31
+EndR = 31
 # 端、根の翼型のファイル名 datファイルを入れる
 RootFoilName = "NACA0013.dat"
 EndFoilName = "NACA0013.dat"
 # リブ枚数
 n = 3
-# 後縁補強材上辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_U = 75
-# 後縁補強材下辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_D = 80
-
+# 何翼?
+PlaneNumber = "4"
+# 半リブあり?
+use_half = False
 
 # リブ以外の要素関連
+# プランク厚さ[mm]
+tp = 2.7
+# ストリンガー断面の一辺[mm]
+e = 5
 # リブキャップ厚さ[mm]
 t = 1
-# 後縁材の前縁側の辺の長さ[mm]
-ht = 8  # 元は8
+# 桁径[mm]	楕円の短軸方向
+d = 31.388
+# 桁径		楕円の長軸-短軸 円なら0
+dd = 31.388 - d
 
+
+# 位置関連
+# プランク下開始位置[%] r plank downside
+rpd = EndR - 100 * (d / 2 + 30) / EndChord
+# プランク上開始位置[%]
+rpu = 60
+
+# ストリンガー上面下面の最後縁位置
+stringerU3Rate = 57
+stringerD3Rate = rpd - 3
+
+# プランク端補強開始位置(翼弦に対する％)
+plankHokyouStartRate_U = stringerU3Rate
+
+# プランク端補強終了位置（翼弦に対する％）
+plankHokyouEndPoint_U = rpu + 4  # 値を小さくしすぎるとエラーになる
+
+# プランク補強材の厚み(ストリンガー穴からの距離mm)
+plankHokyouStringerPlusA = 3
 
 # 機体諸元
+# 0翼取り付け角[°]
+alpha = -6.5
 # 後退角(リブ厚みの修正用)[°]
 sweep = 0
 
@@ -53,6 +81,7 @@ sweep = 0
 
 import os
 import numpy
+from numpy import linalg
 
 # import matplotlib.pyplot as pyplot
 import scipy.interpolate as interp
@@ -63,7 +92,9 @@ import math
 
 sin, cos, tan, atan2 = (math.sin, math.cos, math.tan, math.atan2)
 from scipy.optimize import fsolve
-
+import warnings
+import csv
+import time
 
 os.chdir(Directory)  # ディレクトリ移動
 
@@ -144,29 +175,42 @@ class vector:
             self.x * sin(angle) + self.y * cos(angle),
         )
 
+    def toNormalArray(self):
+        return [self.x, self.y]
 
-def offset(l, t, updown, end=0):
+
+class stringer:
     """
-    l=[vector,...]をtだけずらした点のリストを出力。
-    endが0のとき、最初、最後の点は除かれる。つまり、出力は元のリストより要素が2つすくない。
-    endが1のときは全ての点が残る。端の点は端から2番目の点との傾きを使う。
-    点の向きに対して左にずらすときupdown=0、右にずらすとき1。
+    ストリンガーを図のように定義できる。これをそのまま用いてコマンドも出力できる。
+    Aを一点に持つ。Pで方向を決める。eは一辺。RがFalseならそのまま、Trueなら反転。
+    A、Pはvectorオブジェクト
+    .A、.B、.C、.Dがそれぞれの点
     """
-    ret = []
-    i = 1
-    while i + 1 < len(l):
-        ret.append(
-            (l[i + 1] - l[i - 1]).i / abs(l[i + 1] - l[i - 1]) * t * (-1) ** updown
-            + l[i]
-        )
-        i += 1
-    if end == 1:
-        ret = (
-            [(l[1] - l[0]).i / abs(l[1] - l[0]) * t * (-1) ** updown + l[0]]
-            + ret
-            + [(l[-1] - l[-2]).i / abs(l[-1] - l[-2]) * t * (-1) ** updown + l[-1]]
-        )
-    return ret
+
+    def __init__(self, A, P, e, R=False):
+        self.A = A
+        self.P = P
+        self.e = e
+        self.R = R
+
+    @property
+    def AB(self):
+        return (self.P - self.A) / abs(self.P - self.A) * self.e  # ABベクトル
+
+    @property
+    def B(self):
+        return self.A + self.AB
+
+    @property
+    def D(self):
+        if not self.R:
+            return self.A + self.AB.i
+        else:
+            return self.A - self.AB.i
+
+    @property
+    def C(self):
+        return self.B + self.D - self.A
 
 
 def spline(file, l, O=vector(0, 0)):
@@ -185,6 +229,24 @@ def line(file, P1, P2, O=vector(0, 0)):
     点P1,P2(vector)を結ぶ線分を描くコマンドをfileに出力
     """
     file.write(f"line\n{P1.x+O.x},{P1.y+O.y}\n{P2.x+O.x},{P2.y+O.y}\n\n")
+
+
+def div_P(P1, P2, known, index):
+    """
+    P1,P2を結ぶ直線上にP3があってP3.index=knownがわかっているとき、その点をvectorとして返す。
+    index=0のときx、1のときy
+    """
+    if index == 0:
+        return div_P2(P1, P2, (known - P1.x) / (P2.x - P1.x))
+    if index == 1:
+        return div_P2(P1, P2, (known - P1.y) / (P2.y - P1.y))
+
+
+def div_P2(P1, P2, ratio):
+    """
+    P1,P2をP1P2:P1P3=1:ratioに内分、外分する点P3の座標をvectorとして返す。
+    """
+    return P1 + (P2 - P1) * ratio
 
 
 def offset(l, t, updown, end=0):
@@ -252,6 +314,15 @@ def to_numpy(vectors):
         ret[i][0] = vectors[i].x
         ret[i][1] = vectors[i].y
     return ret
+
+
+def arrayRotate(x, inputArray):
+    # x;反時計回りに考えた際の回転角度、array;回転を行いたい配列
+    degree = numpy.deg2rad(x)
+    rot = numpy.array([[cos(degree), -sin(degree)], [sin(degree), cos(degree)]])
+    v = numpy.array(inputArray)
+    w = numpy.dot(rot, v)
+    return w
 
 
 def WriteText(file, O, text, height=20, angle=0):
@@ -355,52 +426,133 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     f_d = inter(x_d, y_d)
     del s
 
-    ##後縁補強材のデータ作成
-    x_stratPointOfKouennzai_U = c * (startPointOfKouennHokyou_U / 100) * cos(sweep)
-    x_stratPointOfKouennzai_D = c * (startPointOfKouennHokyou_D / 100) * cos(sweep)
-    KouennHokyou_U = offset(
+    ### プランク端補強材の出力
+    ### まず、境界となる座標を求める
+    x_plankHokyouStartRatePosition_U = c * (plankHokyouStartRate_U / 100) * cos(sweep)
+    x_plankHokyouEndPointPosition_U = c * (plankHokyouEndPoint_U / 100) * cos(sweep)
+    x_plank_u = c * (rpu / 100) * cos(sweep)
+    x_plank_d = c * (rpd / 100) * cos(sweep)
+
+    ###AutoCad出力に必要な点の集合や起点を求める
+    ## プランク上の点保持するリストを生成する
+    PlankPs = offset(
+        [FoilU[i] for i in range(len(FoilU) - 2) if FoilU[i + 2].x <= x_plank_u]
+        + [FoilU[-2], FoilD[0], FoilD[1]]
+        + [FoilD[i] for i in range(2, len(FoilD)) if FoilD[i - 2].x <= x_plank_d],
+        tp,
+        0,
+    )
+
+    ## 上面のプランク端補強のプランク上の点を保持
+    planktannHokyouArrayOfPlank_u = [
+        P for P in PlankPs if (P.y >= 0 and x_plankHokyouStartRatePosition_U <= P.x)
+    ]
+    ## 上面のプランク端補強のリブキャップ上の点を保持
+    planktannHokyouArrayOfRibCap_u_1 = offset(
         [
             FoilU[i]
-            for i in range(2, len(FoilU))
-            if FoilU[i - 2].x >= x_stratPointOfKouennzai_U
+            for i in range(1, len(FoilU))
+            if (FoilU[i].x <= x_plankHokyouEndPointPosition_U)
         ],
         t,
         0,
     )
-    KouennHokyou_D = offset(
-        [
-            FoilD[i]
-            for i in range(len(FoilD) - 2)
-            if FoilD[i + 2].x >= x_stratPointOfKouennzai_D
-        ],
-        t,
-        0,
-    )
+    planktannHokyouArrayOfRibCap_u = [
+        planktannHokyouArrayOfRibCap_u_1[i]
+        for i in range(len(planktannHokyouArrayOfRibCap_u_1))
+        if (planktannHokyouArrayOfRibCap_u_1[i].x >= x_plank_u)
+    ]
+    print(planktannHokyouArrayOfRibCap_u_1)
+    print(planktannHokyouArrayOfRibCap_u)
 
-    # 後縁材との接続ラインを表示する
-    FoilD_offsetPs = offset(FoilD[5:], ht, 0)
-    s = numpy.linspace(FoilD_offsetPs[0].x, FoilD_offsetPs[-1].x)
-    f_dOffset = inter(to_numpy_x(FoilD_offsetPs), to_numpy_y(FoilD_offsetPs))
-    TrailU_x = optimize.newton(lambda x: f_dOffset(x) - f_u(x), c * cos(sweep) * 0.95)
-    TrailU = vector(TrailU_x, f_u(TrailU_x))
-    # 後縁材の下側の一点を求める。 TrailUを挟む点を求め、これら三点でoffsetする。
-    EdgeTrailU = [
-        FoilD_offsetPs[i]
-        for i in range(1, len(FoilD_offsetPs))
-        if FoilD_offsetPs[i - 1].x <= TrailU.x
-    ][
-        -2:
-    ]  # TrailUを挟む点
-    TrailD = offset([EdgeTrailU[0], TrailU, EdgeTrailU[1]], ht, 1)[0]
-    del s
+    ##lineの方向性を決めるための各ベクトル類を生成させる
 
-    # 後縁補強材の出力
-    color(file, 0, 0, 0)
-    line(file, TrailU, TrailD, O)
-    color(file, 0, 0, 0)
-    line(file, KouennHokyou_U[-1], KouennHokyou_D[0], O)
-    spline(file, KouennHokyou_D, O)
-    spline(file, KouennHokyou_U, O)
+    # vecU1について
+    vec_u1 = (
+        planktannHokyouArrayOfPlank_u[-1] - planktannHokyouArrayOfPlank_u[-2]
+    )  # vecu1(単位ベクトルではないを生成)
+    vec_u1_NoVec = vec_u1.toNormalArray()  # vecu1をvectorオブジェクトから2Darrayへ
 
-file.close
+    # vecU2について
+    vec_u2 = vec_u1.rotate(90, "degree")
+    vec_u2_NonVec_e = vec_u2.toNormalArray()
+    vec_u2_NonVec_e = [
+        vec_u2_NonVec_e[i]
+        / (vec_u2_NonVec_e[0] ** 2 + vec_u2_NonVec_e[1] ** 2) ** (1 / 2)
+        for i in range(len(vec_u2_NonVec_e))
+    ]
+
+    # vecU3について
+    vec_u3 = vec_u2.rotate(-90, "degree")
+    vec_u3_NonVec_e = vec_u3.toNormalArray()
+    vec_u3_NonVec_e = [
+        vec_u3_NonVec_e[i]
+        / (vec_u3_NonVec_e[0] ** 2 + vec_u3_NonVec_e[1] ** 2) ** (1 / 2)
+        for i in range(len(vec_u3_NonVec_e))
+    ]
+
+    # vecU4について
+    vec_u4 = vec_u3.rotate(90, "degree")
+    vec_u4_NonVec_e = vec_u4.toNormalArray()
+    vec_u4_NonVec_e = [
+        vec_u4_NonVec_e[i]
+        / (vec_u4_NonVec_e[0] ** 2 + vec_u4_NonVec_e[1] ** 2) ** (1 / 2)
+        for i in range(len(vec_u4_NonVec_e))
+    ]
+
+    # vecU5について
+    vec_u5 = vec_u4.rotate(90, "degree")
+    vec_u5_NonVec_e = vec_u5.toNormalArray()
+    vec_u5_NonVec_e = [
+        vec_u5_NonVec_e[i]
+        / (vec_u5_NonVec_e[0] ** 2 + vec_u5_NonVec_e[1] ** 2) ** (1 / 2)
+        for i in range(len(vec_u5_NonVec_e))
+    ]
+
+    # P0,P5をverctorオブジェクトからArrayに変換する
+    P0_u_Nonvec = planktannHokyouArrayOfPlank_u[-1].toNormalArray()
+    P5_u_NonVec = planktannHokyouArrayOfPlank_u[0].toNormalArray()
+
+    ##先ほど導出したベクトル類を用いて各点の座標を求める
+    # P1 P2 P3(array)を求める（P1＝P0＋単位ベクトルu-1*ストリンガーの１辺の長さ）
+    vec_u2_Nonvec_a = [e * vec_u2_NonVec_e[i] for i in range(len(vec_u2_NonVec_e))]
+    vec_u3_Nonvec_a = [e * vec_u3_NonVec_e[i] for i in range(len(vec_u3_NonVec_e))]
+    vec_u4_Nonvec_a = [e * vec_u4_NonVec_e[i] for i in range(len(vec_u4_NonVec_e))]
+    P1 = numpy.add(P0_u_Nonvec, vec_u2_Nonvec_a)
+    P2 = numpy.add(P1, vec_u3_Nonvec_a)
+    P3 = numpy.add(P2, vec_u4_Nonvec_a)
+
+    # P4(array)を求める
+    lengthP3ToP4 = (
+        (P0_u_Nonvec[0] - P5_u_NonVec[0]) ** 2 + (P0_u_Nonvec[1] - P5_u_NonVec[1]) ** 2
+    ) ** (1 / 2) + e
+    # P4の座標を求める
+    vec_u5_Nonvec_a = [
+        lengthP3ToP4 * vec_u5_NonVec_e[i] for i in range(len(vec_u5_NonVec_e))
+    ]
+    P4 = numpy.add(P3, vec_u5_Nonvec_a)
+
+    # P6,P7をVecオブジェクトからarrayへ
+    P6 = planktannHokyouArrayOfRibCap_u[0].toNormalArray()
+    P7 = planktannHokyouArrayOfRibCap_u[-1].toNormalArray()
+
+    ###出力するために各点をvecオブジェクトへ変換する
+    P0_Vec = vector(P0_u_Nonvec[0], P0_u_Nonvec[1], 0)
+    P1_Vec = vector(P1[0], P1[1], 0)
+    P2_Vec = vector(P2[0], P2[1], 0)
+    P3_Vec = vector(P3[0], P3[1], 0)
+    P4_Vec = vector(P4[0], P4[1], 0)
+    P5_Vec = vector(P5_u_NonVec[0], P5_u_NonVec[1])
+    P6_Vec = vector(P6[0], P6[1], 0)
+    P7_Vec = vector(P7[0], P7[1], 0)
+
+    ###AutoCad出力用のコマンドファイル作成
+    spline(file, planktannHokyouArrayOfPlank_u, O)
+    line(file, P0_Vec, P1_Vec, O)
+    line(file, P1_Vec, P2_Vec, O)
+    line(file, P2_Vec, P3_Vec, O)
+    line(file, P3_Vec, P4_Vec, O)
+    line(file, P4_Vec, P6_Vec, O)
+    spline(file, planktannHokyouArrayOfRibCap_u, O)
+    line(file, P7_Vec, P5_Vec, O)
 print("completed")
