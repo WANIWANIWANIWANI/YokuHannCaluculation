@@ -70,6 +70,11 @@ first_light_r = 8
 # 丸肉抜き 最小骨格幅[mm]
 w_circle = 20
 
+# 後縁補強材上辺開始点(翼弦に対する％)
+startPointOfKouennHokyou_U = 75
+# 後縁補強材下辺開始点(翼弦に対する％)
+startPointOfKouennHokyou_D = 80
+
 
 ##適当に入力してもOK数値計算には関係ない
 # 位置関連
@@ -577,8 +582,7 @@ excelareaTotalRibu = []
 excellengthOfKetaanaMawari = []
 excelLengthOfRibCapTotal = []
 excelLengthOfPlankTotal = []
-excelTeaperRatio = []
-excelLengthOfKetaCenterToKouenn = []
+excelKouennHokyou = []
 
 
 O = vector(0, 0)  # それぞれのリブの前縁のy座標
@@ -779,6 +783,22 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             break
         i += 1
 
+    # 後縁補強材(端リブの後縁補強と端リブ補強に重複を込めた計算がある、バグだが誤差は小さい)
+    x_stratPointOfKouennzai_U = c * (startPointOfKouennHokyou_U / 100) * cos(sweep)
+    x_stratPointOfKouennzai_D = c * (startPointOfKouennHokyou_D / 100) * cos(sweep)
+
+    KouennHokyou_U_X = []  # 後縁補強材上側のｘ座標を保持する配列
+    KouennHokyou_U_Y = []  # 後縁補強材上側のｙ座標を保持する配列
+    KouennHokyou_D_X = []  # 後縁補強材下側のｘ座標を保持する配列
+    KouennHokyou_D_Y = []  # 後縁補強材下側のｙ座標を保持する配列
+    for i in range(len(x_u)):  # 上記のリストへ
+        if x_u[i] >= x_stratPointOfKouennzai_U:
+            KouennHokyou_U_X.append(x_u[i])
+            KouennHokyou_U_Y.append(y_u[i])
+        if x_d[i] >= x_stratPointOfKouennzai_D:
+            KouennHokyou_D_X.append(x_d[i])
+            KouennHokyou_D_Y.append(y_d[i])
+
     # リブのデータ書き出しおわり
     # 以下では、リブの面積を計算する
     # 計算式の定義
@@ -786,6 +806,20 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         areaYokugataUpper = -integrate.trapz(y_u, x_u)
         areaYokugataDown = -integrate.trapz(y_d, x_d)
         return areaYokugataUpper + areaYokugataDown
+
+    def caluculationOfareaKouennHokyou():
+        areaKouennHokyouUpper = -integrate.trapz(KouennHokyou_U_Y, KouennHokyou_U_X)
+        areaKouennHokyouDown = -integrate.trapz(KouennHokyou_D_Y, KouennHokyou_D_X)
+        # 積分した面積から一部を引く
+        # 引く面積をざっくりと近似（翼弦長の差分＊上下の後縁開始点のｙ座標の差分＊0.50）
+        subtractionArea = (
+            abs(x_stratPointOfKouennzai_U - x_stratPointOfKouennzai_D)
+            * abs(KouennHokyou_U_Y[0] - KouennHokyou_D_Y[0])
+            * 0.50
+        )
+        return areaKouennHokyouUpper + areaKouennHokyouDown - subtractionArea
+
+    caluculationOfareaKouennHokyou()
 
     def caluculateOfAreaSankakuNikunuki():
         (ax1, ay1) = (x_tl[0], y_tl[0])
@@ -918,7 +952,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     lengthOfKetaanaMawari = lengthOfketaanaShu()  # 桁穴周
     lengthOfRibCaptotal = lehgthOfRibCap()  # リブキャップの長さ
     lengthOfPlanktotal = lengthOfPlank()
-    teaperRatio = teaperRation()
+    areaKouennHokyou = caluculationOfareaKouennHokyou()
 
     # excel出力用リストにまとめる
     excelareayokuGata.append(areayokuGata)
@@ -927,8 +961,8 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     excellengthOfKetaanaMawari.append(lengthOfKetaanaMawari)
     excelLengthOfRibCapTotal.append(lengthOfRibCaptotal)
     excelLengthOfPlankTotal.append(lengthOfPlanktotal)
-    excelTeaperRatio.append(teaperRatio)
-    excelLengthOfKetaCenterToKouenn.append(excelLengthOfKetaCenterToKouenn)
+    excelKouennHokyou.append(areaKouennHokyou)
+
 
 # excelファイルへの書き出し
 import pandas as pd
@@ -941,9 +975,9 @@ df = pd.DataFrame(
         "桁穴周(mm)": excellengthOfKetaanaMawari,
         "リブキャップ長さ(mm)": excelLengthOfRibCapTotal,
         "プランク長さ(mm)": excelLengthOfPlankTotal,
-        "テーパー比": excelTeaperRatio,
+        "後縁補強材の面積": excelKouennHokyou,
     }
 )
-df.to_excel("./0530test2.xlsx")  # ここに出力したいファイル名を設定する
+df.to_excel("./0609test1.xlsx")  # ここに出力したいファイル名を設定する
 
 print("completed")
