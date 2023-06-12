@@ -66,7 +66,7 @@ plankHokyouStartRate_U = stringerU3Rate
 # プランク端補強終了位置（翼弦に対する％）
 plankHokyouEndPoint_U = rpu + 4  # 値を小さくしすぎるとエラーになる
 
-# プランク補強材の厚み(ストリンガー穴からの距離mm)
+# プランク補強材の厚み(最大翼厚にたいする％で表示)
 plankHokyouStringerPlusA = 3
 
 # 機体諸元
@@ -513,11 +513,18 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     P0_u_Nonvec = planktannHokyouArrayOfPlank_u[-1].toNormalArray()
     P5_u_NonVec = planktannHokyouArrayOfPlank_u[0].toNormalArray()
 
+    # プランク端補強材のストリンガー上の厚みを計算する（入力値は、翼の最大厚み）
+    y_maxU = numpy.amax(y_u)
+    y_maxD = numpy.amin(y_d)
+    maxThicknessOfYoku = y_maxU - y_maxD  # 翼の最大厚みを保持
+    lengthOfvec4 = maxThicknessOfYoku * plankHokyouStringerPlusA / 100
     ##先ほど導出したベクトル類を用いて各点の座標を求める
     # P1 P2 P3(array)を求める（P1＝P0＋単位ベクトルu-1*ストリンガーの１辺の長さ）
     vec_u2_Nonvec_a = [e * vec_u2_NonVec_e[i] for i in range(len(vec_u2_NonVec_e))]
     vec_u3_Nonvec_a = [e * vec_u3_NonVec_e[i] for i in range(len(vec_u3_NonVec_e))]
-    vec_u4_Nonvec_a = [e * vec_u4_NonVec_e[i] for i in range(len(vec_u4_NonVec_e))]
+    vec_u4_Nonvec_a = [
+        lengthOfvec4 * vec_u4_NonVec_e[i] for i in range(len(vec_u4_NonVec_e))
+    ]
     P1 = numpy.add(P0_u_Nonvec, vec_u2_Nonvec_a)
     P2 = numpy.add(P1, vec_u3_Nonvec_a)
     P3 = numpy.add(P2, vec_u4_Nonvec_a)
