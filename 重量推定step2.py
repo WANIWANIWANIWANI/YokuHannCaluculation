@@ -26,8 +26,8 @@ crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
 # 読み取りファイルと書き出しファイルの設定
 yokuNumber = "2翼"  # 何翼？（数字＋翼）
-readingFilePath = r"C:\Users\ryota2002\Documents\libu\0530test1.xlsx"
-exportReadingFilepath = "./0530test8output.xlsx"
+readingFilePath = r"C:\Users\ryota2002\Documents\libu\0617HalfRibAreaTest.xlsx"
+exportReadingFilepath = "./0617HalfRib.xlsx"
 
 # Excelファイルの取り込み
 filename = readingFilePath
@@ -54,7 +54,10 @@ def ribuWeight():  # リブのスタイロの部分の重量
         if ribData[7] == 1:  # 肉抜きを行う場合
             volumeOfRib = ribData[2] * ribData[8]  # リブ面積＊リブ厚み
             totalVolumeOfRib += volumeOfRib
-        else:
+        elif ribData[7] == 2:  # 半リブの場合
+            volumeOfRib = ribData[1] * ribData[8]
+            totalVolumeOfRib += volumeOfRib
+        else:  # フルリブの場合
             volumeOfRib = ribData[0] * ribData[8]
             totalVolumeOfRib += volumeOfRib
     return totalVolumeOfRib * sutairoDensity
