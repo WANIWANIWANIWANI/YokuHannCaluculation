@@ -18,7 +18,7 @@ ProjectName = "aaa"
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
 RootChord = 1288
-EndChord = 1288
+EndChord = 700
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 EndDelta = 0
@@ -29,7 +29,7 @@ EndR = 31
 RootFoilName = "NACA0013.dat"
 EndFoilName = "NACA0013.dat"
 # リブ枚数
-n = 10
+n = 3
 # 何翼?
 PlaneNumber = "0"
 # 半リブあり?
@@ -37,16 +37,16 @@ use_half = False
 
 # リブ以外の要素関連
 # プランク厚さ[mm]
-tp = 2
+tp = 2.7
 # ストリンガー断面の一辺[mm]
 e = 5
 # リブキャップ厚さ[mm]
 t = 1
 # 桁径[mm]	楕円の短軸方向
 # 49.5
-d = 132.52
+d = 31.388
 # 桁径		楕円の長軸-短軸 円なら0
-dd = 133.59 - d
+dd = 31.388 - d
 # アセンブリ棒径[mm]
 da = 30
 # アセンブリ棒余白[mm]
@@ -62,13 +62,13 @@ lo = 10
 # 前縁材のoffset[mm]
 offset_l = 1
 # 三角肉抜き最小骨格幅[mm]
-w_tri = 13
+w_tri = 15
 # 三角肉抜き端半径[mm]
-r_tri = 4
+r_tri = 10
 # 前縁-肉抜き 長さ[%]
-first_light_r = 8
+first_light_r = 10
 # 丸肉抜き 最小骨格幅[mm]
-w_circle = 20
+w_circle = 15
 
 # 後縁補強材上辺開始点(翼弦に対する％)
 startPointOfKouennHokyou_U = 75
@@ -76,8 +76,7 @@ startPointOfKouennHokyou_U = 75
 startPointOfKouennHokyou_D = 80
 
 
-##適当に入力してもOK数値計算には関係ない
-# 位置関連
+# 位置関連 halfRibの面積計算用
 # プランク上開始位置[%]
 rpu = 60
 # プランク下開始位置[%] r plank downside
@@ -287,6 +286,23 @@ def WriteCircle(file, circle, O=vector(0, 0), WriteCenter=True):
         line(file, circle.O + vector(5, 0), circle.O + vector(-5, 0), O)
 
 
+# ２点を通る方程式
+# (y=数値) or (x=数値) or (y=mx+n)　#line[傾きm、ｙ切片n]
+def makeLinearEquation(x1, y1, x2, y2):
+    line = []
+    if y1 == y2:
+        # y軸に平行な直線
+        line["y"] = y1
+    elif x1 == x2:
+        # x軸に平行な直線
+        line["x"] = x1
+    else:
+        # y = mx + n
+        line.append((y1 - y2) / (x1 - x2))
+        line.append(y1 - (line[0] * x1))
+    return line
+
+
 def div_P(P1, P2, known, index):
     """
     P1,P2を結ぶ直線上にP3があってP3.index=knownがわかっているとき、その点をvectorとして返す。
@@ -441,7 +457,7 @@ def define_Oa(
     # 円の半径に使う
     r = da / 2 + h
     FoilPs = [EndFoilPs, RootFoilPs]
-    print(str(FoilPs[0][0]) + str(FoilPs[1][0]))
+
     Os = [EndPipeO, RootPipeO]
 
     ret = [0, 0]
@@ -485,6 +501,13 @@ def WriteText(file, O, text, height=20, angle=0):
     Oから始める。フォントの高さはheight、angleは字の角度[°]
     """
     file.write(f"text\n{O.x},{O.y}\n{str(height)}\n{str(angle)}\n{text}\n\n")
+
+
+def find_nearest(array, value):  # 配列の中身の内最もvalueの値に近いものを取り出す
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    index = array.__index__
+    return array[idx]
 
 
 # 関数、クラス定義おわり
@@ -583,6 +606,7 @@ excellengthOfKetaanaMawari = []
 excelLengthOfRibCapTotal = []
 excelLengthOfPlankTotal = []
 excelKouennHokyou = []
+excelareaHalfRib = []
 
 
 O = vector(0, 0)  # それぞれのリブの前縁のy座標
@@ -819,8 +843,6 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         )
         return areaKouennHokyouUpper + areaKouennHokyouDown - subtractionArea
 
-    caluculationOfareaKouennHokyou()
-
     def caluculateOfAreaSankakuNikunuki():
         (ax1, ay1) = (x_tl[0], y_tl[0])
         (bx1, by1) = (x_tl[1], y_tl[1])
@@ -908,6 +930,81 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         Plank_total_Length = plankLength_u + plankLength_d
         return Plank_total_Length
 
+    def caluculationOfAreaHalfRib():
+        # halfRib切り取り線を決める２点を出力
+        # 上面に関してはプランク端、下面は、stringerDTの出力位置
+        # stringerDtのｘ座標を求める
+        placeStartPointOfHalfRib_D = c * rsdt / 100 * cos(sweep)
+        # この値に最も近いリブキャップ上の位置をリブ下面の切り取り点とする
+        nearestPointOfHalfRibCut_d_x = find_nearest(
+            x_d, placeStartPointOfHalfRib_D
+        )  # x座標
+        # x座標の配列内でのindexからｙ座標を配列から引き出す(indexが[]で出力される)
+        crossingCenterAndHalfRibCutline_x_index_array_in_x_d = numpy.where(
+            x_d == nearestPointOfHalfRibCut_d_x
+        )
+        if len(crossingCenterAndHalfRibCutline_x_index_array_in_x_d) > 2:
+            print("error;halfRibの切り取り線が1つに決まりません.errorを解消してください")
+        # リブ下面切り取り点のｙ座標
+        nearestPointOfHalfRibCut_d_y = y_d[
+            crossingCenterAndHalfRibCutline_x_index_array_in_x_d[0]
+        ]
+        ##翼弦に対して積分を行う
+        plank_u_ToNonVec_x = []  # プランク上のx座標の集合 xの値が大きいものから順番に配列の中に存在
+        plank_u_ToNonVec_y = []  # プランク上のｙ座標の集合
+        plank_d_ToNonVec_x = []  # プランク下のx座標の集合　ｘの値が小さいモノから順の配列に存在
+        plank_d_ToNonVec_y = []  # 　プランク下のy座標の集合
+        for i in range(len(x_u)):  # 上記のリストへ
+            if x_u[i] < x_plank_u:
+                addition_array_PlankU_x = x_u[i]
+                addition_array_PlankU_y = y_u[i]
+                plank_u_ToNonVec_x.append(addition_array_PlankU_x)
+                plank_u_ToNonVec_y.append(addition_array_PlankU_y)
+        for i in range(len(x_d)):
+            if x_d[i] < nearestPointOfHalfRibCut_d_x:
+                addition_array_PlankD_x = x_d[i]
+                addition_array_PlankD_y = y_d[i]
+                plank_d_ToNonVec_x.append(addition_array_PlankD_x)
+                plank_d_ToNonVec_y.append(addition_array_PlankD_y)
+        areaHalflib_u = -integrate.trapz(plank_u_ToNonVec_y, plank_u_ToNonVec_x)
+        areaHalflib_d = -integrate.trapz(plank_d_ToNonVec_y, plank_d_ToNonVec_x)
+        totalAreaIntegrate = areaHalflib_u + areaHalflib_d  # 翼弦を積分軸にして積分
+
+        # 積分値から引き去る部分
+        # halfribの切り取る１次関数を定義
+        linearObject = makeLinearEquation(
+            nearestPointOfHalfRibCut_d_x,
+            nearestPointOfHalfRibCut_d_y,
+            plank_u_ToNonVec_x[0],
+            plank_u_ToNonVec_y[0],
+        )
+        # halfRibの切り取り線と中心線の接点のｘ座標を求める
+        crossingCenterAndHalfRibCutline_x = -linearObject[1] / linearObject[0]
+
+        # 積分の値から足し引く部分の面積を計算する
+        # 下側については加える、上側に関しては引く
+        subtrackAreaU = (
+            abs(plank_u_ToNonVec_x[0] - crossingCenterAndHalfRibCutline_x)
+            * plank_u_ToNonVec_y[0]
+            * (1 / 2)
+        )
+        addAreaD = (
+            abs(plank_d_ToNonVec_x[-1] - crossingCenterAndHalfRibCutline_x)
+            * -plank_d_ToNonVec_y[-1]
+            * (1 / 2)
+        )
+        print("ichi")
+        print(-plank_d_ToNonVec_y[-1])
+        # halfRibの面積
+        areaHalfRib = totalAreaIntegrate - subtrackAreaU[0] + addAreaD[0]
+        print("積分面積")
+        print(totalAreaIntegrate)
+        print("追加面積")
+        print(addAreaD[0])
+        print("引く面積")
+        print(subtrackAreaU[0])
+        return areaHalfRib
+
     def lehgthOfRibCap():
         ribCap_u_ToNonVec = []  # リブキャップ上の点の集合のベクトルを外したリスト保持
         ribCap_d_ToNonVec = []  # リブキャップ下の点の集合のベクトルを外したリスト保持
@@ -947,6 +1044,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     areaSankakuNikunuki = caluculateOfAreaSankakuNikunuki()  # リブの三角抜き面積
     areaMaruNikunuki = caluculationOfAreaMaruNikunuki()  # リブの円形肉抜き面積
     totalAreaOfNikunuki = areaSankakuNikunuki + areaMaruNikunuki  # 肉抜き面積の合計
+    areaHalfRib = caluculationOfAreaHalfRib()  # halfRibの面積
     areaKetaana = areaKetaana()  # 桁穴の面積
     areaTotalRibu = areayokuGata - totalAreaOfNikunuki - areaKetaana  # 最終的なリブ面積
     lengthOfKetaanaMawari = lengthOfketaanaShu()  # 桁穴周
@@ -957,27 +1055,27 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     # excel出力用リストにまとめる
     excelareayokuGata.append(areayokuGata)
     excelareatotalAreaOfNikunuki.append(totalAreaOfNikunuki)
+    excelareaHalfRib.append(areaHalfRib)
     excelareaTotalRibu.append(areaTotalRibu)
     excellengthOfKetaanaMawari.append(lengthOfKetaanaMawari)
     excelLengthOfRibCapTotal.append(lengthOfRibCaptotal)
     excelLengthOfPlankTotal.append(lengthOfPlanktotal)
     excelKouennHokyou.append(areaKouennHokyou)
 
-
 # excelファイルへの書き出し
 import pandas as pd
 
 df = pd.DataFrame(
     {
-        "肉抜き前リブ面積(mm2)": excelareayokuGata,
-        "肉抜き面積の合計(mm2)": excelareatotalAreaOfNikunuki,
-        "最終的なリブ面積（桁穴面積考慮済み）(mm2)": excelareaTotalRibu,
+        "フルリブ面積(mm2)": excelareayokuGata,
+        "半リブ面積(mm2)": excelareaHalfRib,
+        "肉抜きリブ面積(mm2)": excelareaTotalRibu,
         "桁穴周(mm)": excellengthOfKetaanaMawari,
         "リブキャップ長さ(mm)": excelLengthOfRibCapTotal,
         "プランク長さ(mm)": excelLengthOfPlankTotal,
         "後縁補強材の面積": excelKouennHokyou,
     }
 )
-df.to_excel("./0609test1.xlsx")  # ここに出力したいファイル名を設定する
+df.to_excel("./0617HalfRibAreaTest.xlsx")  # ここに出力したいファイル名を設定する
 
 print("completed")
