@@ -1067,7 +1067,7 @@ import pandas as pd
 
 df = pd.DataFrame(
     {
-        "肉抜き前リブ面積(mm2)": excelareayokuGata,
+        "フルリブ面積(mm2)": excelareayokuGata,
         "半リブ面積(mm2)": excelareaHalfRib,
         "肉抜きリブ面積(mm2)": excelareaTotalRibu,
         "桁穴周(mm)": excellengthOfKetaanaMawari,
