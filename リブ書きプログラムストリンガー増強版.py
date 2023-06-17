@@ -12,7 +12,7 @@
 
 # ファイル関連
 # 出力するテキストファイルの名前。拡張子は不要
-ProjectName = "0601test"
+ProjectName = "HalfRibAreaTest0616"
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
 
@@ -35,7 +35,7 @@ n = 3
 # 何翼?
 PlaneNumber = "4"
 # 半リブあり?
-use_half = False
+use_half = True
 
 # リブ以外の要素関連
 # プランク厚さ[mm]
@@ -76,7 +76,7 @@ w_circle = 15
 rpu = 60
 # プランク下開始位置[%] r plank downside
 rpd = EndR - 100 * (d / 2 + 30) / EndChord
-# ストリンガー下後縁側位置[%] r stringer downside trailing edge
+# ストリンガー下後縁側位置[%] r stringer downside trailing edge #半リブの切り取り線に依存
 rsdt = rpd + 20
 # ストリンガー前縁[mm] x stringer leading edge
 xsl = 20 + e
