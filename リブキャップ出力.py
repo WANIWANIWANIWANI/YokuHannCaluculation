@@ -3,8 +3,8 @@
 lengthOfRibCap = 7
 directory = r"C:\Users\ryota2002\Documents\libu"  # 出力先のディレクトリー
 projectName = "リブキャップtest1"  # 出力ファイル名
-verticalLength = 297  # バルサ材の縦の長さ（A4：297mm）
-horizonalLengt = 210  # バルサ材の横の長さ（A4:210mm）
+y_length = 297  # バルサ材の縦の長さ（A4：297mm）
+x_length = 210  # バルサ材の横の長さ（A4:210mm）
 
 # 以下、出力用のファイルを作成する
 import os
@@ -33,45 +33,45 @@ def color(file, r, g, b):
 
 # A4用紙の外形を書く
 color(file, 0, 0, 255)
-line(file, [0, 0], [horizonalLengt, 0])
-line(file, [horizonalLengt, 0], [horizonalLengt, verticalLength])
-line(file, [horizonalLengt, verticalLength], [0, verticalLength])
-line(file, [0, verticalLength], [0, 0])
+line(file, [0, 0], [x_length, 0])
+line(file, [x_length, 0], [x_length, y_length])
+line(file, [x_length, y_length], [0, y_length])
+line(file, [0, y_length], [0, 0])
 
 # バルサ板にとる余白の大きさを指定する
-marginhorizonal = 10
-marginvertical = 10
+x_margin_length = 10
+y_margin_length = 10
 
 # バルサ材の余白部分を出力
 line(
     file,
-    [marginhorizonal, marginvertical],
-    [marginhorizonal, verticalLength - marginhorizonal],
+    [x_margin_length, y_margin_length],
+    [x_margin_length, y_length - x_margin_length],
 )
 line(
     file,
-    [marginhorizonal, verticalLength - marginhorizonal],
-    [horizonalLengt - marginhorizonal, verticalLength - marginvertical],
+    [x_margin_length, y_length - x_margin_length],
+    [x_length - x_margin_length, y_length - y_margin_length],
 )
 
 line(
     file,
-    [horizonalLengt - marginhorizonal, marginvertical],
-    [marginhorizonal, marginvertical],
+    [x_length - x_margin_length, y_margin_length],
+    [x_margin_length, y_margin_length],
 )
 
-xAllForthisProgram = marginhorizonal  # プログラムを制御するための変数(x軸) 初期値は、ｘ軸の余白分だけ移動した点
-while xAllForthisProgram + lengthOfRibCap <= horizonalLengt - marginhorizonal:
+xAllForthisProgram = x_margin_length  # プログラムを制御するための変数(x軸) 初期値は、ｘ軸の余白分だけ移動した点
+while xAllForthisProgram + lengthOfRibCap <= x_length - x_margin_length:
     line(
         file,
-        [xAllForthisProgram, marginvertical],
-        [xAllForthisProgram, verticalLength - marginvertical],
+        [xAllForthisProgram, y_margin_length],
+        [xAllForthisProgram, y_length - y_margin_length],
     )
     xAllForthisProgram += lengthOfRibCap
     line(
         file,
-        [xAllForthisProgram, marginvertical],
-        [xAllForthisProgram, verticalLength - marginvertical],
+        [xAllForthisProgram, y_margin_length],
+        [xAllForthisProgram, y_length - y_margin_length],
     )
 
 
