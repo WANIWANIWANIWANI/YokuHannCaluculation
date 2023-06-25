@@ -1,7 +1,7 @@
 import pandas as pd
 
 # 各定数を以下で設定する（試作）
-ribFixKetaanaDensity = 0  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
+ribFixKetaanaDensity = 0.007  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
 tannribuHokyouDensity = 0.000335  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
 ribCapDensity = 0.000335  # リブキャップの密度（g/リブキャップ１mm²）
 densityOfKouennzai = 0.0001294  # 後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
@@ -14,7 +14,7 @@ weightOfFrange = 0  # フランジの重量
 weightOfKannzashi = 0  # かんざしの重量
 
 # 既知の値
-lengthOfKeta = 2000  # 桁の長さ
+lengthOfKeta = 2500  # 桁の長さ
 numberOfRyoumennteapForVerticalForYokugenn = 7  # 翼弦に対して垂直な方向の両面テープ数
 sutairoDensity = 0.000031  # スタイロの密度(g/mm3)
 ketaLengthFrangeinsideToFrangeInside = 2000  # 桁長さ
@@ -26,8 +26,8 @@ crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
 # 読み取りファイルと書き出しファイルの設定
 yokuNumber = "2翼"  # 何翼？（数字＋翼）
-readingFilePath = r"C:\Users\ryota2002\Documents\libu\0617HalfRibAreaTest.xlsx"
-exportReadingFilepath = "./0617HalfRib.xlsx"
+readingFilePath = r"C:\Users\ryota2002\Documents\libu\0618HalfRibAreaTest.xlsx"
+exportReadingFilepath = "./0618HalfRib.xlsx"
 
 # Excelファイルの取り込み
 filename = readingFilePath
@@ -179,7 +179,8 @@ totalWeightOfKouennzai = weightOfKoennzai()
 totalWeightOfRyoumennTeap = weightOfRyoumennTeap()
 totalWeightOf1Dstructure = weightOf1Dstructure()
 totalWeightOf2Dstructure = (
-    totalWeightOfRibFixingAroundKetaMawari
+    totalWeightOfRib
+    + totalWeightOfRibFixingAroundKetaMawari
     + totalWeightOfRibTannribuHokyou
     + totalWeightOfRibCap
     + totalWeightOfStringer
