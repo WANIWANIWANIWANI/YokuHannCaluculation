@@ -12,7 +12,7 @@
 
 # ファイル関連
 # 出力するテキストファイルの名前。拡張子は不要
-ProjectName = "HalfRibAreaTest0616"
+ProjectName = "HalfRibAreaTest0625"
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
 
@@ -922,7 +922,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     color(file, 0, 0, 0)
     if use_half and k % 2 == 0 and k != n:
         # 半リブ有で、偶数枚目で、端リブでない時
-        line(file, StringerU.D, StringerDT.D, O)
+        line(file, PlankPs[0], StringerDT.D, O)
     else:  # 肉抜きする
         for C in light_Cs:
             WriteCircle(file, C, O, WriteCenter=True)
