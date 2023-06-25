@@ -45,7 +45,7 @@ for row in data.itertuples():
 print(ribuTotalData)
 # ribuTotalData[]にexcelから読みっとたデータが２次元配列で保持
 # 具体的には,
-# 肉抜き前リブ面積、肉抜き面積の合計、最終的なリブ面積、桁穴周、リブキャップ長さ、プランク長さ、後縁補強材の面積、肉抜きの有無（1;肉抜き、2:肉抜きなし）、リブの厚み、プランク厚みの順
+# 肉抜き前リブ面積、半リブ面積の合計、最終的なリブ面積、桁穴周、リブキャップ長さ、プランク長さ、後縁補強材の面積、肉抜きの有無（1;肉抜き、2:肉抜きなし）、リブの厚み、プランク厚みの順
 
 
 def ribuWeight():  # リブのスタイロの部分の重量
@@ -98,7 +98,8 @@ def KouennHokyou():
     kouennHokyouArea -= ribuTotalData[-1][6]
     for ribData in ribuTotalData:
         areaKouennHokyou = ribData[6]
-        kouennHokyouArea += areaKouennHokyou
+        if ribData[7] == 2:
+            kouennHokyouArea += areaKouennHokyou
     return kouennHokyouArea * tannribuHokyouDensity
 
 
@@ -106,7 +107,8 @@ def ribCapWeight():
     ribCapArea = 0  # リブキャップの面積を保持
     for ribData in ribuTotalData:  # リブキャップの面積を求める
         areaRibCap = ribData[4] * ribData[8]  # リブキャップの長さ＊リブの厚み
-        ribCapArea += areaRibCap
+        if ribData[7] == 2:
+            ribCapArea += areaRibCap
     return ribCapArea * ribCapDensity
 
 
