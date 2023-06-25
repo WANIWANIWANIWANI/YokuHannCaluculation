@@ -5,9 +5,9 @@ lengthOfInterval = 50  # 4分割を行う際の１区間の長さ
 numberOfPart = 4  # １枚のA4用紙から何枚の用紙が欲しいか？
 directory = r"C:\Users\ryota2002\Documents\libu"  # 出力先のディレクトリー
 projectName = "罫書用紙test1"  # 出力ファイル名
-verticalLength = 297  # 用紙の縦の長さ（A4：297mm）
-horizonalLengt = 210  # 用紙の横の長さ（A4:210mm）
-
+y_length = 297  # 用紙の縦の長さ（A4：297mm）
+x_length = 210  # 用紙の横の長さ（A4:210mm）
+marginRight = 10  # 余白設定
 # 以下、出力用のファイルを作成する
 import os
 
@@ -35,27 +35,26 @@ def color(file, r, g, b):
 
 # A4用紙の外形を書く
 color(file, 0, 0, 255)
-line(file, [0, 0], [horizonalLengt, 0])
-line(file, [horizonalLengt, 0], [horizonalLengt, verticalLength])
-line(file, [horizonalLengt, verticalLength], [0, verticalLength])
-line(file, [0, verticalLength], [0, 0])
+line(file, [0, 0], [x_length, 0])
+line(file, [x_length, 0], [x_length, y_length])
+line(file, [x_length, y_length], [0, y_length])
+line(file, [0, y_length], [0, 0])
 
 # １枚から取り出す罫書用紙の枚数を基に長さを計算
-marginRight = 10
-wideOfUseableLength = horizonalLengt - 10  # 余白右除いた長さ
+wideOfUseableLength = x_length - 10  # 余白右除いた長さ
 lengthOfOnePart = wideOfUseableLength / numberOfPart  # １区間（左側の余白＋罫書用紙１枚の横幅）
 lengthOfLightMargin = lengthOfOnePart * 0.20  # 20％分を余白へ
 lengthOfKegaki = lengthOfOnePart * 0.80  # 80%分を余白へ
 
 xAllForthisProgram = 0  # プログラムを制御するための変数(x軸)
-while xAllForthisProgram <= horizonalLengt:
+while xAllForthisProgram <= x_length:
     xAllForthisProgram += lengthOfLightMargin
     line(file, [xAllForthisProgram, 0], [xAllForthisProgram, 297])
     xAllForthisProgram += lengthOfKegaki
     line(file, [xAllForthisProgram, 0], [xAllForthisProgram, 297])
 
 yAllForThisProgram = 0
-while yAllForThisProgram <= verticalLength:
+while yAllForThisProgram <= y_length:
     yAllForThisProgram += lengthOfInterval
     line(file, [0, yAllForThisProgram], [210, yAllForThisProgram])
 
