@@ -6,6 +6,10 @@ projectName = "リブキャップtest1"  # 出力ファイル名
 y_length = 297  # バルサ材の縦の長さ（A4：297mm）
 x_length = 210  # バルサ材の横の長さ（A4:210mm）
 
+# バルサ板にとる余白の大きさを指定する
+x_margin_length = 10
+y_margin_length = 10
+
 # 以下、出力用のファイルを作成する
 import os
 
@@ -38,9 +42,6 @@ line(file, [x_length, 0], [x_length, y_length])
 line(file, [x_length, y_length], [0, y_length])
 line(file, [0, y_length], [0, 0])
 
-# バルサ板にとる余白の大きさを指定する
-x_margin_length = 10
-y_margin_length = 10
 
 # バルサ材の余白部分を出力
 line(
