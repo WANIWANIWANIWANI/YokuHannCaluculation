@@ -993,16 +993,8 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             * -plank_d_ToNonVec_y[-1]
             * (1 / 2)
         )
-        print("ichi")
-        print(-plank_d_ToNonVec_y[-1])
         # halfRibの面積
         areaHalfRib = totalAreaIntegrate - subtrackAreaU[0] + addAreaD[0]
-        print("積分面積")
-        print(totalAreaIntegrate)
-        print("追加面積")
-        print(addAreaD[0])
-        print("引く面積")
-        print(subtrackAreaU[0])
         return areaHalfRib
 
     def lehgthOfRibCap():
