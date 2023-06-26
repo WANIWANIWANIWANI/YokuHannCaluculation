@@ -12,7 +12,7 @@
 
 # ファイル関連
 # 出力するテキストファイルの名前。拡張子は不要
-ProjectName = "HalfRibAreaTest0625"
+ProjectName = "stringerOutputModeling0626"
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
 
@@ -311,21 +311,16 @@ def div_P2(P1, P2, ratio):
 
 def WriteStringer(file, stringer, O=vector(0, 0)):
     """上のstringerを入力にしてこれを描くコマンドを出力"""
+    extentionLineVector_onDA = (stringer.A - stringer.D) * 1.20 + stringer.D
+    extentionLineVector_onCB = (stringer.B - stringer.C) * 1.20 + stringer.C
+    line(file, stringer.D, extentionLineVector_onDA, O)
+    line(file, stringer.C, extentionLineVector_onCB, O)
     file.write(
         """line
 {ax},{ay}
-{bx},{by}
-{cx},{cy}
 {dx},{dy}
-{ax},{ay}
-
-line
-{ax},{ay}
 {cx},{cy}
-
-line
 {bx},{by}
-{dx},{dy}
 
 """.format(
             ax=stringer.A.x + O.x,
@@ -584,7 +579,7 @@ y_u, y_d = [], []  # 定義前に使うと誤解されないように
 for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     # y座標の設定 かぶらないようにするため。1cmの隙間もあける
     if k > 1:  # k=1のときO=(0,0)にしている
-        O.y -= numpy.max(y_u) - numpy.min(y_d) + 10
+        O.y -= numpy.max(y_u) - numpy.min(y_d) + 150
 
     # 翼型の点のリストの出力。 上下の翼型を関数として作成。
     # 混ぜる割合。　根で0、端で1。
@@ -865,9 +860,9 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         i += 1
 
     # 現在のリブの図面を出力 要精度-黒 作成時に使う線-青 補助線-ピンク
-    # 翼型 切らないのでピンク
-    color(file, 255, 0, 255)
-    spline(file, FoilPs, O)
+    # # 翼型 切らないのでピンク
+    # color(file, 255, 0, 255)
+    # spline(file, FoilPs, O)
     # 中心線 アセンブリで見るので青
     color(file, 0, 0, 255)
     spline(file, CamberPs, O)
@@ -887,8 +882,8 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     WriteStringer(file, stringerD1ToVec, O)
     WriteStringer(file, stringerD2ToVec, O)
     WriteStringer(file, stringerD3ToVec, O)
+    # WriteStringer(file, stringer(vector(xsl, 0), vector(0, 0), e, True), O)
 
-    WriteStringer(file, stringer(vector(xsl, 0), vector(0, 0), e, True), O)
     # プランク、リブキャップ境目出力 切るので黒
     color(file, 0, 0, 0)
     line(file, StringerU.A + O, div_P2(StringerU.D, StringerU.A, 1 + tp / e) + O)
