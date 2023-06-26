@@ -12,7 +12,7 @@
 
 # ファイル関連
 # 出力するテキストファイルの名前。拡張子は不要
-ProjectName = "0602test"
+ProjectName = "0626testPlankTann"
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
 
@@ -31,7 +31,7 @@ EndR = 31
 RootFoilName = "NACA0013.dat"
 EndFoilName = "NACA0013.dat"
 # リブ枚数
-n = 3
+n = 10
 # 何翼?
 PlaneNumber = "4"
 # 半リブあり?
@@ -69,6 +69,8 @@ plankHokyouEndPoint_U = rpu + 4  # 値を小さくしすぎるとエラーにな
 # プランク補強材の厚み(最大翼厚にたいする％で表示)
 plankHokyouStringerPlusA = 3
 
+# 出力時の余白設定
+margin = 30
 # 機体諸元
 # 0翼取り付け角[°]
 alpha = -6.5
@@ -280,6 +282,14 @@ def color(file, r, g, b):
     file.write(f"-color\nt\n{r},{g},{b}\n")
 
 
+def WriteText(file, O, text, height=20, angle=0):
+    """
+    fileにtextを入力するコマンドを出力
+    Oから始める。フォントの高さはheight、angleは字の角度[°]
+    """
+    file.write(f"text\n{O.x},{O.y}\n{str(height)}\n{str(angle)}\n{text}\n\n")
+
+
 def to_vectors(array):
     """numpyで書かれた配列をvectorのリストに直して返す"""
     return [vector(P[0], P[1]) for P in array]
@@ -384,13 +394,9 @@ file = open(f"{ProjectName}.txt", "w")
 file.write("texted\n1\n")  # textをコマンドで入力できるように設定
 file.write("-lweight\n0.001\n")  # 線の太さ設定
 
-O = vector(0, 0)  # それぞれのリブの前縁のy座標
+
 y_u, y_d = [], []  # 定義前に使うと誤解されないように
 for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
-    # y座標の設定 かぶらないようにするため。1cmの隙間もあける
-    if k > 1:  # k=1のときO=(0,0)にしている
-        O.y -= numpy.max(y_u) - numpy.min(y_d) + 10
-
     # 翼型の点のリストの出力。 上下の翼型を関数として作成。
     # 混ぜる割合。　根で0、端で1。
     r = (k - 1) / (n - 1)
@@ -462,8 +468,20 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         for i in range(len(planktannHokyouArrayOfRibCap_u_1))
         if (planktannHokyouArrayOfRibCap_u_1[i].x >= x_plank_u)
     ]
-    print(planktannHokyouArrayOfRibCap_u_1)
-    print(planktannHokyouArrayOfRibCap_u)
+
+    O = vector(0, 0)  # それぞれのリブの前縁のy座標
+    # y座標の設定 かぶらないようにするため。1cmの隙間もあける
+    O.y -= margin * k
+    planktannHokyouArrayOfPlank_u_array = [
+        planktannHokyouArrayOfPlank_u[i].toNormalArray()
+        for i in range(len(planktannHokyouArrayOfPlank_u))
+    ]
+    planktannHokyouArrayOfPlank_u_array_x = [
+        planktannHokyouArrayOfPlank_u_array[i][0]
+        for i in range(len(planktannHokyouArrayOfPlank_u))
+    ]
+    print(planktannHokyouArrayOfPlank_u_array_x)
+    O.x -= numpy.min(planktannHokyouArrayOfPlank_u_array_x) + 10
 
     ##lineの方向性を決めるための各ベクトル類を生成させる
 
@@ -553,6 +571,11 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     P6_Vec = vector(P6[0], P6[1], 0)
     P7_Vec = vector(P7[0], P7[1], 0)
 
+    ###文字の出力位置
+    text = vector(
+        O.x + numpy.min(planktannHokyouArrayOfPlank_u_array_x) - 40, O.y + margin
+    )
+
     ###AutoCad出力用のコマンドファイル作成
     spline(file, planktannHokyouArrayOfPlank_u, O)
     line(file, P0_Vec, P1_Vec, O)
@@ -562,4 +585,5 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     line(file, P4_Vec, P6_Vec, O)
     spline(file, planktannHokyouArrayOfRibCap_u, O)
     line(file, P7_Vec, P5_Vec, O)
+    WriteText(file, text, k, 10)
 print("completed")
