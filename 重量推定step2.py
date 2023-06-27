@@ -26,8 +26,8 @@ crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
 # 読み取りファイルと書き出しファイルの設定
 yokuNumber = "2翼"  # 何翼？（数字＋翼）
-readingFilePath = r"C:\Users\ryota2002\Documents\libu\0618HalfRibAreaTest.xlsx"
-exportReadingFilepath = "./0618HalfRib.xlsx"
+readingFilePath = r"C:\Users\ryota2002\Documents\libu\0627TEST.xlsx"
+exportReadingFilepath = "./0627TESTOUTPUT.xlsx"
 
 # Excelファイルの取り込み
 filename = readingFilePath
@@ -45,7 +45,7 @@ for row in data.itertuples():
 print(ribuTotalData)
 # ribuTotalData[]にexcelから読みっとたデータが２次元配列で保持
 # 具体的には,
-# 肉抜き前リブ面積、半リブ面積の合計、最終的なリブ面積、桁穴周、リブキャップ長さ、プランク長さ、後縁補強材の面積、肉抜きの有無（1;肉抜き、2:肉抜きなし）、リブの厚み、プランク厚みの順
+# 肉抜き前リブ面積、半リブ面積の合計、最終的なリブ面積、桁穴周、リブキャップ長さ、プランク長さ、後縁補強材の面積、リブの種類（0:肉抜き無、１肉抜きアリ、２半リブ）、リブの厚み、プランク厚みの順
 
 
 def ribuWeight():  # リブのスタイロの部分の重量
@@ -98,7 +98,7 @@ def KouennHokyou():
     kouennHokyouArea -= ribuTotalData[-1][6]
     for ribData in ribuTotalData:
         areaKouennHokyou = ribData[6]
-        if ribData[7] == 2:
+        if ribData[7] != 2:
             kouennHokyouArea += areaKouennHokyou
     return kouennHokyouArea * tannribuHokyouDensity
 
@@ -107,7 +107,7 @@ def ribCapWeight():
     ribCapArea = 0  # リブキャップの面積を保持
     for ribData in ribuTotalData:  # リブキャップの面積を求める
         areaRibCap = ribData[4] * ribData[8]  # リブキャップの長さ＊リブの厚み
-        if ribData[7] == 2:
+        if ribData[7] != 2:
             ribCapArea += areaRibCap
     return ribCapArea * ribCapDensity
 
