@@ -29,7 +29,7 @@ EndR = 31
 RootFoilName = "NACA0013.dat"
 EndFoilName = "NACA0013.dat"
 # リブ枚数
-n = 3
+n = 20
 # 何翼?
 PlaneNumber = "0"
 # 半リブあり?
@@ -1068,6 +1068,6 @@ df = pd.DataFrame(
         "後縁補強材の面積": excelKouennHokyou,
     }
 )
-df.to_excel("./0617HalfRibAreaTest.xlsx")  # ここに出力したいファイル名を設定する
+df.to_excel("./0627TEST.xlsx")  # ここに出力したいファイル名を設定する
 
 print("completed")
