@@ -12,7 +12,7 @@
 
 # ファイル関連
 # 出力するテキストファイルの名前。拡張子は不要
-ProjectName = "stringerOutputModeling0626"
+ProjectName = "stringerOutput0630"
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
 
@@ -40,8 +40,10 @@ use_half = True
 # リブ以外の要素関連
 # プランク厚さ[mm]
 tp = 2.7
-# ストリンガー断面の一辺[mm]
+# ストリンガー断面の一辺[mm](翼弦垂直方向)
 e = 5
+# ストリンガー断面の１辺[mm](翼弦平行方向)
+e1 = 5.5
 # リブキャップ厚さ[mm]
 t = 1
 # 桁径[mm]	楕円の短軸方向
@@ -221,10 +223,12 @@ class stringer:
 
     @property
     def D(self):
+        ABVec_e = self.AB / abs(self.AB)
+        ABVecForLineAD = ABVec_e * e1  # ABベクトルの長さをe1へ、これを回転させてADベクトルを作る
         if not self.R:
-            return self.A + self.AB.i
+            return self.A + ABVecForLineAD.i
         else:
-            return self.A - self.AB.i
+            return self.A - ABVecForLineAD.i
 
     @property
     def C(self):
