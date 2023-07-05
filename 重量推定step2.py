@@ -9,12 +9,12 @@ densityOfStringer = 0.0001294  # ストリンガーの密度（ｇ/mm³） つ�
 densityOfRyoumennteap = 0  # 両面テープの密度（g/mm2）
 
 # １次構造
-weightOfketa = 0  # 桁の重量(g)
-weightOfFrange = 0  # フランジの重量
+weightOfketa = 1737  # 桁の重量(g)
+weightOfFrange = 219  # フランジの重量
 weightOfKannzashi = 0  # かんざしの重量
 
 # 既知の値
-lengthOfKeta = 2500  # 桁の長さ
+lengthOfKeta = 2910  # 桁の長さ
 numberOfRyoumennteapForVerticalForYokugenn = 7  # 翼弦に対して垂直な方向の両面テープ数
 sutairoDensity = 0.000031  # スタイロの密度(g/mm3)
 ketaLengthFrangeinsideToFrangeInside = 2000  # 桁長さ
@@ -25,9 +25,9 @@ densityOfFilm = 0.0000002  # フィルムの密度（ｇ/mm³）
 crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
 # 読み取りファイルと書き出しファイルの設定
-yokuNumber = "2翼"  # 何翼？（数字＋翼）
-readingFilePath = r"C:\Users\ryota2002\Documents\libu\0627TEST.xlsx"
-exportReadingFilepath = "./0627TESTOUTPUT.xlsx"
+yokuNumber = "16期1翼中間リブ半リブ10mm端リブ15mmバルサ補強無普通のリブ7㎜肉抜き"  # 条件を記入
+readingFilePath = r"C:\Users\ryota2002\Documents\libu\16期1翼TEST1.xlsx"
+
 
 # Excelファイルの取り込み
 filename = readingFilePath
@@ -211,6 +211,9 @@ df = pd.DataFrame(
         "翼の総重量(g)": [totalWeightOfYoku],
     }
 )
-df.to_excel(exportReadingFilepath)
+with pd.ExcelWriter(
+    readingFilePath, engine="openpyxl", mode="a", if_sheet_exists="new"
+) as writer:
+    df.to_excel(writer, sheet_name=yokuNumber, index=False)
 
 print("completed")
