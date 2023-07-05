@@ -1,10 +1,10 @@
 # 設定
 # 印刷時にA4でコピーすることを想定
 
-lengthOfInterval = 50  # 4分割を行う際の１区間の長さ
+lengthOfInterval = 56.4171  # 4分割を行う際の１区間の長さ
 numberOfPart = 4  # １枚のA4用紙から何枚の用紙が欲しいか？
 directory = r"C:\Users\ryota2002\Documents\libu"  # 出力先のディレクトリー
-projectName = "罫書用紙test1"  # 出力ファイル名
+projectName = "罫書用紙試作１本目"  # 出力ファイル名
 y_length = 297  # 用紙の縦の長さ（A4：297mm）
 x_length = 210  # 用紙の横の長さ（A4:210mm）
 marginRight = 10  # 余白設定

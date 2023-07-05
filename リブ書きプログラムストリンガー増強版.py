@@ -12,14 +12,14 @@
 
 # ファイル関連
 # 出力するテキストファイルの名前。拡張子は不要
-ProjectName = "stringerOutput0630"
+ProjectName = "16期１翼"
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
 
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
-RootChord = 1288
-EndChord = 700
+RootChord = 1344
+EndChord = 1216
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 
@@ -28,8 +28,8 @@ EndDelta = 0
 RootR = 31
 EndR = 31
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "NACA0013.dat"
-EndFoilName = "NACA0013.dat"
+RootFoilName = "DAE-21 AIRFOIL.dat"
+EndFoilName = "DAE-21 AIRFOIL.dat"
 # リブ枚数
 n = 3
 # 何翼?
@@ -47,9 +47,9 @@ e1 = 5.5
 # リブキャップ厚さ[mm]
 t = 1
 # 桁径[mm]	楕円の短軸方向
-d = 31.388
+d = 112
 # 桁径		楕円の長軸-短軸 円なら0
-dd = 31.388 - d
+dd = 112 - d
 # アセンブリ棒径[mm]
 da = 30  # 元は30
 # アセンブリ棒余白[mm]

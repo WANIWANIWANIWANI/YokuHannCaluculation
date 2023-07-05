@@ -17,8 +17,8 @@ ProjectName = "aaa"
 
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
-RootChord = 1288
-EndChord = 700
+RootChord = 1344
+EndChord = 1216
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 EndDelta = 0
@@ -26,10 +26,10 @@ EndDelta = 0
 RootR = 31
 EndR = 31
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "NACA0013.dat"
-EndFoilName = "NACA0013.dat"
+RootFoilName = "DAE-21 AIRFOIL.dat"
+EndFoilName = "DAE-21 AIRFOIL.dat"
 # リブ枚数
-n = 20
+n = 16
 # 何翼?
 PlaneNumber = "0"
 # 半リブあり?
@@ -44,9 +44,9 @@ e = 5
 t = 1
 # 桁径[mm]	楕円の短軸方向
 # 49.5
-d = 31.388
+d = 112
 # 桁径		楕円の長軸-短軸 円なら0
-dd = 31.388 - d
+dd = 112 - d
 # アセンブリ棒径[mm]
 da = 30
 # アセンブリ棒余白[mm]
@@ -71,9 +71,9 @@ first_light_r = 10
 w_circle = 15
 
 # 後縁補強材上辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_U = 75
+startPointOfKouennHokyou_U = 99.9
 # 後縁補強材下辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_D = 80
+startPointOfKouennHokyou_D = 100
 
 
 # 位置関連 halfRibの面積計算用
@@ -1068,6 +1068,6 @@ df = pd.DataFrame(
         "後縁補強材の面積": excelKouennHokyou,
     }
 )
-df.to_excel("./0627TEST.xlsx")  # ここに出力したいファイル名を設定する
+df.to_excel("16期1翼TEST.xlsx")  # ここに出力したいファイル名を設定する
 
 print("completed")
