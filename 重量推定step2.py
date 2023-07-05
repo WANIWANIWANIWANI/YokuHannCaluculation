@@ -24,9 +24,12 @@ lengthOFStringerSide2 = 5  # ストリンガーの一辺の長さ
 densityOfFilm = 0.0000002  # フィルムの密度（ｇ/mm³）
 crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
-# 読み取りファイルと書き出しファイルの設定
-yokuNumber = "16期1翼中間リブ半リブ10mm端リブ15mmバルサ補強無普通のリブ7㎜肉抜き"  # 条件を記入
+# 読み取りファイルと書き出しファイルの設定a
+yokuNumber = "16期1翼中間リブ半リブ10mm端リブ15mmバルサ補強無普通のリブ7㎜肉抜きtest"  # 条件を記入
 readingFilePath = r"C:\Users\ryota2002\Documents\libu\16期1翼TEST1.xlsx"
+
+# リブ枚数
+numberOfRib = 16
 
 
 # Excelファイルの取り込み
@@ -192,6 +195,7 @@ totalWeightOf2Dstructure = (
     + totalWeightOfRyoumennTeap
 )
 totalWeightOfYoku = totalWeightOf1Dstructure + totalWeightOf2Dstructure
+rateOfNikunuki = 1 - ribuTotalData[0][2] / ribuTotalData[0][0]
 # excelファイルへの書き出し
 df = pd.DataFrame(
     {
@@ -209,6 +213,8 @@ df = pd.DataFrame(
         "2次構造の重量(g)": [totalWeightOf2Dstructure],
         "1次構造の重量(g)": [totalWeightOf1Dstructure],
         "翼の総重量(g)": [totalWeightOfYoku],
+        "リブ枚数": [numberOfRib],
+        "肉抜き率": [rateOfNikunuki],
     }
 )
 with pd.ExcelWriter(
