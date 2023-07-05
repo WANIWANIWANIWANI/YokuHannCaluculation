@@ -70,11 +70,17 @@ first_light_r = 10
 # 丸肉抜き 最小骨格幅[mm]
 w_circle = 15
 
+# 上面下面で同じ値を指定することは不可
 # 後縁補強材上辺開始点(翼弦に対する％)
 startPointOfKouennHokyou_U = 99.9
 # 後縁補強材下辺開始点(翼弦に対する％)
 startPointOfKouennHokyou_D = 100
 
+# 上面下面で同じ値を指定することは不可
+# 端リブ補強材上辺開始点(翼弦に対する％)
+startPointOfendRibHokyou_U = 99.9
+# 端リブ強材下辺開始点(翼弦に対する％)
+startPointOfendRibHokyou_D = 100
 
 # 位置関連 halfRibの面積計算用
 # プランク上開始位置[%]
@@ -85,6 +91,15 @@ rpd = EndR - 100 * (d / 2 + 30) / EndChord
 rsdt = rpd + 20
 # ストリンガー前縁[mm] x stringer leading edge
 xsl = 20 + e
+
+# プランク端補強材の導入位置の設定
+# プランク端補強開始位置(翼弦に対する％)(上面最後縁のストリンガー位置を設定)
+plankHokyouStartRate_U = 57
+# プランク端補強終了位置（翼弦に対する％）
+plankHokyouEndPoint_U = rpu + 4  # 値を小さくしすぎるとエラーになる
+# プランク補強材の厚み(最大翼厚にたいする％で表示)
+plankHokyouStringerPlusA = 3
+
 
 # 機体諸元
 # 0翼取り付け角[°](定常飛行迎角)
@@ -607,6 +622,8 @@ excelLengthOfRibCapTotal = []
 excelLengthOfPlankTotal = []
 excelKouennHokyou = []
 excelareaHalfRib = []
+excelEndRibHokyou = []
+excelPlankEndHokyou = []
 
 
 O = vector(0, 0)  # それぞれのリブの前縁のy座標
@@ -807,7 +824,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             break
         i += 1
 
-    # 後縁補強材(端リブの後縁補強と端リブ補強に重複を込めた計算がある、バグだが誤差は小さい)
+    # 後縁補強材を構成する点のリストを出六
     x_stratPointOfKouennzai_U = c * (startPointOfKouennHokyou_U / 100) * cos(sweep)
     x_stratPointOfKouennzai_D = c * (startPointOfKouennHokyou_D / 100) * cos(sweep)
 
@@ -822,6 +839,22 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         if x_d[i] >= x_stratPointOfKouennzai_D:
             KouennHokyou_D_X.append(x_d[i])
             KouennHokyou_D_Y.append(y_d[i])
+
+    # 端リブ補強材を構成する点のリストを出六
+    x_stratPointOfEndRib_U = c * (startPointOfendRibHokyou_U / 100) * cos(sweep)
+    x_stratPointOfEndRib_D = c * (startPointOfendRibHokyou_D / 100) * cos(sweep)
+
+    endRibHokyou_U_X = []  # 後縁補強材上側のｘ座標を保持する配列
+    endRibHokyou_U_Y = []  # 後縁補強材上側のｙ座標を保持する配列
+    endRibHokyou_D_X = []  # 後縁補強材下側のｘ座標を保持する配列
+    endRibHokyou_D_Y = []  # 後縁補強材下側のｙ座標を保持する配列
+    for i in range(len(x_u)):  # 上記のリストへ
+        if x_u[i] >= x_stratPointOfEndRib_U:
+            endRibHokyou_U_X.append(x_u[i])
+            endRibHokyou_U_Y.append(y_u[i])
+        if x_d[i] >= x_stratPointOfEndRib_D:
+            endRibHokyou_D_X.append(x_d[i])
+            endRibHokyou_D_Y.append(y_d[i])
 
     # リブのデータ書き出しおわり
     # 以下では、リブの面積を計算する
@@ -929,6 +962,35 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             plankLength_d += lengthOfP1P2_d
         Plank_total_Length = plankLength_u + plankLength_d
         return Plank_total_Length
+
+    def caluculationOfAreaEndRibHokyou():
+        ##積分面積を保持(翼弦を積分軸にして積分の実行)
+        areaHalflib_u = -integrate.trapz(endRibHokyou_U_Y, endRibHokyou_U_X)
+        areaHalflib_d = -integrate.trapz(endRibHokyou_D_Y, endRibHokyou_D_X)
+        totalAreaIntegrateEndRib = areaHalflib_u + areaHalflib_d
+        ##足し引きして調整する部分の面積
+        # 翼上面の補強開始点と下面の補強開始点を結ぶ１次関数を求める
+        linearObject = makeLinearEquation(
+            x_stratPointOfEndRib_U,
+            x_stratPointOfEndRib_D,
+            endRibHokyou_U_X[0],
+            endRibHokyou_U_Y[0],
+        )
+        # halfRibの切り取り線と中心線の接点のｘ座標を求める
+        crossingCenterAndHalfRibCutline_x = -linearObject[1] / linearObject[0]
+        # 足し引きを行う面積を求める
+        subtrackAreaU = (
+            abs(endRibHokyou_U_X[0] - crossingCenterAndHalfRibCutline_x)
+            * endRibHokyou_U_Y[0]
+            * (1 / 2)
+        )
+        addAreaD = (
+            abs(KouennHokyou_D_X[-1] - crossingCenterAndHalfRibCutline_x)
+            * -KouennHokyou_D_Y[-1]
+        )
+        # halfRibの面積
+        areaEndRibHokyou = totalAreaIntegrateEndRib - subtrackAreaU + addAreaD
+        return areaEndRibHokyou
 
     def caluculationOfAreaHalfRib():
         # halfRib切り取り線を決める２点を出力
@@ -1042,7 +1104,11 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     lengthOfKetaanaMawari = lengthOfketaanaShu()  # 桁穴周
     lengthOfRibCaptotal = lehgthOfRibCap()  # リブキャップの長さ
     lengthOfPlanktotal = lengthOfPlank()
-    areaKouennHokyou = caluculationOfareaKouennHokyou()
+    areaKouennHokyou = caluculationOfareaKouennHokyou()  # 後縁補強材の面積
+    if k == 1 or k == n:
+        areaEndRibHokyou = caluculationOfAreaEndRibHokyou()
+    else:
+        areaEndRibHokyou = 0
 
     # excel出力用リストにまとめる
     excelareayokuGata.append(areayokuGata)
@@ -1053,7 +1119,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     excelLengthOfRibCapTotal.append(lengthOfRibCaptotal)
     excelLengthOfPlankTotal.append(lengthOfPlanktotal)
     excelKouennHokyou.append(areaKouennHokyou)
-
+    excelEndRibHokyou.append(areaEndRibHokyou)
 # excelファイルへの書き出し
 import pandas as pd
 
@@ -1066,6 +1132,11 @@ df = pd.DataFrame(
         "リブキャップ長さ(mm)": excelLengthOfRibCapTotal,
         "プランク長さ(mm)": excelLengthOfPlankTotal,
         "後縁補強材の面積": excelKouennHokyou,
+        "リブの種類": "",
+        "リブの厚み": "",
+        "プランクの厚み": "",
+        "端リブ補強材の面積": excelEndRibHokyou,
+        "プランク端補強材の面積": "",
     }
 )
 df.to_excel("16期1翼TEST.xlsx")  # ここに出力したいファイル名を設定する
