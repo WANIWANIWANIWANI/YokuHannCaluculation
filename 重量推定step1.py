@@ -1093,6 +1093,31 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     def teaperRation():
         return EndChord / RootChord
 
+    def caluculationOfPlankEndHokyou():
+        #####長方形部分と三角形部分の面積に分割して考える
+        ####翼の最大厚み
+        y_maxU = numpy.amax(y_u)
+        y_maxD = numpy.amin(y_d)
+        maxThicknessOfYoku = y_maxU - y_maxD
+        #####該当リブの翼弦を保持
+        x_max = numpy.amax(x_u)
+
+        # 長方形部分
+        # 桁に対して垂直な方向の長さ
+        lengthOfY = maxThicknessOfYoku * (plankHokyouStringerPlusA / 100) + e
+        # 桁に対して平行な方向の長さ
+        lengthOfX_chouhoukei = x_max * (rpu - plankHokyouStartRate_U) / 100
+        areaChouhoukei = lengthOfX_chouhoukei * lengthOfY
+
+        # 三角形部分
+        lengthOfX_square = x_max * (plankHokyouEndPoint_U - rpu) / 100
+        areaSquare = lengthOfX_square * lengthOfY * (1 / 2)
+
+        # プランク端補強の面積
+        areaPlankEndHokyou = areaChouhoukei + areaSquare
+
+        return areaPlankEndHokyou
+
     # 計算値まとめ
     areayokuGata = caluculateOfareaYokugata()  # 肉抜きをしないときのリブ面積
     areaSankakuNikunuki = caluculateOfAreaSankakuNikunuki()  # リブの三角抜き面積
@@ -1103,12 +1128,13 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     areaTotalRibu = areayokuGata - totalAreaOfNikunuki - areaKetaana  # 最終的なリブ面積
     lengthOfKetaanaMawari = lengthOfketaanaShu()  # 桁穴周
     lengthOfRibCaptotal = lehgthOfRibCap()  # リブキャップの長さ
-    lengthOfPlanktotal = lengthOfPlank()
+    lengthOfPlanktotal = lengthOfPlank()  # プランク部分の長さ
     areaKouennHokyou = caluculationOfareaKouennHokyou()  # 後縁補強材の面積
     if k == 1 or k == n:
         areaEndRibHokyou = caluculationOfAreaEndRibHokyou()
     else:
         areaEndRibHokyou = 0
+    areaPlankTannArea = caluculationOfPlankEndHokyou()  # プランク端補強材の面積
 
     # excel出力用リストにまとめる
     excelareayokuGata.append(areayokuGata)
@@ -1120,6 +1146,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     excelLengthOfPlankTotal.append(lengthOfPlanktotal)
     excelKouennHokyou.append(areaKouennHokyou)
     excelEndRibHokyou.append(areaEndRibHokyou)
+    excelPlankEndHokyou.append(areaPlankTannArea)
 # excelファイルへの書き出し
 import pandas as pd
 
@@ -1136,7 +1163,7 @@ df = pd.DataFrame(
         "リブの厚み": "",
         "プランクの厚み": "",
         "端リブ補強材の面積": excelEndRibHokyou,
-        "プランク端補強材の面積": "",
+        "プランク端補強材の面積": excelPlankEndHokyou,
     }
 )
 df.to_excel("16期1翼TEST.xlsx")  # ここに出力したいファイル名を設定する
