@@ -48,7 +48,7 @@ for row in data.itertuples():
 print(ribuTotalData)
 # ribuTotalData[]にexcelから読みっとたデータが２次元配列で保持
 # 具体的には,
-# 肉抜き前リブ面積、半リブ面積の合計、最終的なリブ面積、桁穴周、リブキャップ長さ、プランク長さ、後縁補強材の面積、リブの種類（0:肉抜き無、１肉抜きアリ、２半リブ）、リブの厚み、プランク厚みの順
+# 肉抜き前リブ面積、半リブ面積の合計、最終的なリブ面積、桁穴周、リブキャップ長さ、プランク長さ、後縁補強材の面積、リブの種類（0:肉抜き無、１肉抜きアリ、２半リブ）、リブの厚み、プランク厚み,端リブ補強材面積(肉抜き無)、,端リブ補強材面積(肉抜き無),プランク端補強材の面積の順
 
 
 def ribuWeight():  # リブのスタイロの部分の重量
@@ -171,6 +171,14 @@ def weightOfRyoumennTeap():  # 両面テープの重量 ここについては、
     return areaRyoumennTeap * densityOfRyoumennteap
 
 
+def weightOfPlankEndHokyou():
+    areaPlankHokyou = 0  # プランク端補強材の面積を保持する変数
+    for ribDate in ribuTotalData:
+        addPlankHokyou = ribDate[12]
+        areaPlankHokyou += addPlankHokyou
+    return areaPlankHokyou * tannribuHokyouDensity
+
+
 # excelファイル出力用の値が保持される変数
 totalWeightOfRib = ribuWeight()
 totalWeightOfRibFixingAroundKetaMawari = ribuFixWeight()
@@ -182,6 +190,7 @@ totalWeightOfStringer = weightOfStringer()
 totalWeightOfFilm = filmWeight()
 totalWeightOfKouennzai = weightOfKoennzai()
 totalWeightOfRyoumennTeap = weightOfRyoumennTeap()
+totalweightOfPlnkEnd = weightOfPlankEndHokyou()
 totalWeightOf1Dstructure = weightOf1Dstructure()
 totalWeightOf2Dstructure = (
     totalWeightOfRib
@@ -193,6 +202,7 @@ totalWeightOf2Dstructure = (
     + totalWeightOfFilm
     + totalWeightOfKouennzai
     + totalWeightOfRyoumennTeap
+    + totalweightOfPlnkEnd
 )
 totalWeightOfYoku = totalWeightOf1Dstructure + totalWeightOf2Dstructure
 rateOfNikunuki = 1 - ribuTotalData[0][2] / ribuTotalData[0][0]
@@ -210,6 +220,7 @@ df = pd.DataFrame(
         "フィルムの重量(g)": [totalWeightOfFilm],
         "後縁材の重量(g)": [totalWeightOfKouennzai],
         "両面テープの重量(g)": [totalWeightOfRyoumennTeap],
+        "プランク端補強材の重量": [totalweightOfPlnkEnd],
         "2次構造の重量(g)": [totalWeightOf2Dstructure],
         "1次構造の重量(g)": [totalWeightOf1Dstructure],
         "翼の総重量(g)": [totalWeightOfYoku],

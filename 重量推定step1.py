@@ -1162,7 +1162,8 @@ df = pd.DataFrame(
         "リブの種類": "",
         "リブの厚み": "",
         "プランクの厚み": "",
-        "端リブ補強材の面積": excelEndRibHokyou,
+        "端リブ補強材の面積(肉抜き無)": excelEndRibHokyou,
+        "端リブ補強材の面積（肉抜きアリ）": "",
         "プランク端補強材の面積": excelPlankEndHokyou,
     }
 )
