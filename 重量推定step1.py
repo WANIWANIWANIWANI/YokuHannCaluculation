@@ -72,15 +72,15 @@ w_circle = 15
 
 # 上面下面で同じ値を指定することは不可
 # 後縁補強材上辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_U = 99.9
+startPointOfKouennHokyou_U = 75
 # 後縁補強材下辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_D = 100
+startPointOfKouennHokyou_D = 80
 
 # 上面下面で同じ値を指定することは不可
 # 端リブ補強材上辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_U = 99.9
+startPointOfendRibHokyou_U = 75
 # 端リブ強材下辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_D = 100
+startPointOfendRibHokyou_D = 80
 
 # 位置関連 halfRibの面積計算用
 # プランク上開始位置[%]
@@ -976,7 +976,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             endRibHokyou_U_X[0],
             endRibHokyou_U_Y[0],
         )
-        # halfRibの切り取り線と中心線の接点のｘ座標を求める
+        # 端リブの切り取り線と中心線の接点のｘ座標を求める
         crossingCenterAndHalfRibCutline_x = -linearObject[1] / linearObject[0]
         # 足し引きを行う面積を求める
         subtrackAreaU = (
@@ -988,9 +988,9 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             abs(KouennHokyou_D_X[-1] - crossingCenterAndHalfRibCutline_x)
             * -KouennHokyou_D_Y[-1]
         )
-        # halfRibの面積
+        # 端リブ補強材の面積
         areaEndRibHokyou = totalAreaIntegrateEndRib - subtrackAreaU + addAreaD
-        return areaEndRibHokyou
+        return [areaEndRibHokyou, crossingCenterAndHalfRibCutline_x]
 
     def caluculationOfAreaHalfRib():
         # halfRib切り取り線を決める２点を出力
@@ -1131,7 +1131,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     lengthOfPlanktotal = lengthOfPlank()  # プランク部分の長さ
     areaKouennHokyou = caluculationOfareaKouennHokyou()  # 後縁補強材の面積
     if k == 1 or k == n:
-        areaEndRibHokyou = caluculationOfAreaEndRibHokyou()
+        areaEndRibHokyou = caluculationOfAreaEndRibHokyou()[0]
     else:
         areaEndRibHokyou = 0
     areaPlankTannArea = caluculationOfPlankEndHokyou()  # プランク端補強材の面積
@@ -1147,6 +1147,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     excelKouennHokyou.append(areaKouennHokyou)
     excelEndRibHokyou.append(areaEndRibHokyou)
     excelPlankEndHokyou.append(areaPlankTannArea)
+
 # excelファイルへの書き出し
 import pandas as pd
 
@@ -1159,14 +1160,13 @@ df = pd.DataFrame(
         "リブキャップ長さ(mm)": excelLengthOfRibCapTotal,
         "プランク長さ(mm)": excelLengthOfPlankTotal,
         "後縁補強材の面積": excelKouennHokyou,
-        "リブの種類": "",
-        "リブの厚み": "",
-        "プランクの厚み": "",
+        "リブの種類": 0,
+        "リブの厚み": 7,
+        "プランクの厚み": 2,
         "端リブ補強材の面積(肉抜き無)": excelEndRibHokyou,
-        "端リブ補強材の面積（肉抜きアリ）": "",
         "プランク端補強材の面積": excelPlankEndHokyou,
     }
 )
-df.to_excel("16期1翼TEST.xlsx")  # ここに出力したいファイル名を設定する
+df.to_excel("0707TEST.xlsx")  # ここに出力したいファイル名を設定する
 
 print("completed")
