@@ -987,7 +987,6 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         addAreaD = abs(endRibHokyou_U_X[0] - crossingCenterAndHalfRibCutline_x) * abs(
             endRibHokyou_U_Y[0]
         )
-        print(endRibHokyou_U_X, endRibHokyou_U_Y)
         # 端リブ補強材の面積
         areaEndRibHokyou = totalAreaIntegrateEndRib - subtrackAreaU + addAreaD
 
