@@ -78,9 +78,9 @@ startPointOfKouennHokyou_D = 80
 
 # 上面下面で同じ値を指定することは不可
 # 端リブ補強材上辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_U = 98
+startPointOfendRibHokyou_U = 20
 # 端リブ強材下辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_D = 97
+startPointOfendRibHokyou_D = 35
 
 # 位置関連 halfRibの面積計算用
 # プランク上開始位置[%]
@@ -849,10 +849,10 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     endRibHokyou_D_X = []  # 後縁補強材下側のｘ座標を保持する配列
     endRibHokyou_D_Y = []  # 後縁補強材下側のｙ座標を保持する配列
     for i in range(len(x_u)):  # 上記のリストへ
-        if x_u[i] <= x_stratPointOfEndRib_U:
+        if x_u[i] >= x_stratPointOfEndRib_U:
             endRibHokyou_U_X.append(x_u[i])
             endRibHokyou_U_Y.append(y_u[i])
-        if x_d[i] <= x_stratPointOfEndRib_D:
+        if x_d[i] >= x_stratPointOfEndRib_D:
             endRibHokyou_D_X.append(x_d[i])
             endRibHokyou_D_Y.append(y_d[i])
 
@@ -866,7 +866,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
 
     def caluculationOfareaKouennHokyou():
         areaKouennHokyouUpper = -integrate.trapz(KouennHokyou_U_Y, KouennHokyou_U_X)
-        areaKouennHokyouDown = -integrate.trapz(KouennHokyou_D_Y, KouennHokyou_D_X)
+        areaKouennHokyouDown = integrate.trapz(KouennHokyou_D_Y, KouennHokyou_D_X)
         # 積分した面積から一部を引く
         # 引く面積をざっくりと近似（翼弦長の差分＊上下の後縁開始点のｙ座標の差分＊0.50）
         subtractionArea = (
@@ -980,13 +980,14 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         crossingCenterAndHalfRibCutline_x = -linearObject[1] / linearObject[0]
         # 足し引きを行う面積を求める
         subtrackAreaU = (
-            abs(endRibHokyou_U_X[0] - crossingCenterAndHalfRibCutline_x)
+            abs(endRibHokyou_U_X[-1] - crossingCenterAndHalfRibCutline_x)
             * abs(endRibHokyou_U_Y[-1])
             * (1 / 2)
         )
-        addAreaD = abs(endRibHokyou_U_X[-1] - crossingCenterAndHalfRibCutline_x) * abs(
-            endRibHokyou_U_Y[-1]
+        addAreaD = abs(endRibHokyou_U_X[0] - crossingCenterAndHalfRibCutline_x) * abs(
+            endRibHokyou_U_Y[0]
         )
+        print(endRibHokyou_U_X, endRibHokyou_U_Y)
         # 端リブ補強材の面積
         areaEndRibHokyou = totalAreaIntegrateEndRib - subtrackAreaU + addAreaD
 
