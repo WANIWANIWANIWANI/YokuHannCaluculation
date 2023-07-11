@@ -78,9 +78,9 @@ startPointOfKouennHokyou_D = 80
 
 # 上面下面で同じ値を指定することは不可
 # 端リブ補強材上辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_U = 75
+startPointOfendRibHokyou_U = 98
 # 端リブ強材下辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_D = 80
+startPointOfendRibHokyou_D = 97
 
 # 位置関連 halfRibの面積計算用
 # プランク上開始位置[%]
@@ -849,10 +849,10 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     endRibHokyou_D_X = []  # 後縁補強材下側のｘ座標を保持する配列
     endRibHokyou_D_Y = []  # 後縁補強材下側のｙ座標を保持する配列
     for i in range(len(x_u)):  # 上記のリストへ
-        if x_u[i] >= x_stratPointOfEndRib_U:
+        if x_u[i] <= x_stratPointOfEndRib_U:
             endRibHokyou_U_X.append(x_u[i])
             endRibHokyou_U_Y.append(y_u[i])
-        if x_d[i] >= x_stratPointOfEndRib_D:
+        if x_d[i] <= x_stratPointOfEndRib_D:
             endRibHokyou_D_X.append(x_d[i])
             endRibHokyou_D_Y.append(y_d[i])
 
@@ -966,7 +966,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     def caluculationOfAreaEndRibHokyou():
         ##積分面積を保持(翼弦を積分軸にして積分の実行)
         areaHalflib_u = -integrate.trapz(endRibHokyou_U_Y, endRibHokyou_U_X)
-        areaHalflib_d = -integrate.trapz(endRibHokyou_D_Y, endRibHokyou_D_X)
+        areaHalflib_d = integrate.trapz(endRibHokyou_D_Y, endRibHokyou_D_X)
         totalAreaIntegrateEndRib = areaHalflib_u + areaHalflib_d
         ##足し引きして調整する部分の面積
         # 翼上面の補強開始点と下面の補強開始点を結ぶ１次関数を求める
@@ -981,15 +981,16 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         # 足し引きを行う面積を求める
         subtrackAreaU = (
             abs(endRibHokyou_U_X[0] - crossingCenterAndHalfRibCutline_x)
-            * endRibHokyou_U_Y[0]
+            * abs(endRibHokyou_U_Y[-1])
             * (1 / 2)
         )
-        addAreaD = (
-            abs(KouennHokyou_D_X[-1] - crossingCenterAndHalfRibCutline_x)
-            * -KouennHokyou_D_Y[-1]
+        addAreaD = abs(endRibHokyou_U_X[-1] - crossingCenterAndHalfRibCutline_x) * abs(
+            endRibHokyou_U_Y[-1]
         )
         # 端リブ補強材の面積
         areaEndRibHokyou = totalAreaIntegrateEndRib - subtrackAreaU + addAreaD
+
+        print(totalAreaIntegrateEndRib, "積分範囲", subtrackAreaU, "引く面積", addAreaD, "足す面積")
         return [areaEndRibHokyou, crossingCenterAndHalfRibCutline_x]
 
     def caluculationOfAreaHalfRib():
@@ -1167,6 +1168,6 @@ df = pd.DataFrame(
         "プランク端補強材の面積": excelPlankEndHokyou,
     }
 )
-df.to_excel("0707TEST.xlsx")  # ここに出力したいファイル名を設定する
+df.to_excel("0711TEST33.xlsx")  # ここに出力したいファイル名を設定する
 
 print("completed")

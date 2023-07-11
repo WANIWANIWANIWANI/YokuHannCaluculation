@@ -25,8 +25,8 @@ densityOfFilm = 0.0000002  # フィルムの密度（ｇ/mm³）
 crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
 # 読み取りファイルと書き出しファイルの設定a
-yokuNumber = "16期1翼中間リブ半リブ10mm端リブ15mmバルサ補強無普通のリブ7㎜肉抜きtest"  # 条件を記入
-readingFilePath = r"C:\Users\ryota2002\Documents\libu\16期1翼TEST1.xlsx"
+yokuNumber = "0711TEST3"  # 条件を記入
+readingFilePath = r"C:\Users\ryota2002\Documents\libu\0711TEST33.xlsx"
 
 # リブ枚数
 numberOfRib = 16
@@ -42,13 +42,13 @@ for row in data.itertuples():
     if row == 0:
         break
     ribuDataPartial = []
-    for k in range(2, 12):
+    for k in range(2, 14):
         ribuDataPartial.append(row[k])
     ribuTotalData.append(ribuDataPartial)
 print(ribuTotalData)
 # ribuTotalData[]にexcelから読みっとたデータが２次元配列で保持
 # 具体的には,
-# 肉抜き前リブ面積、半リブ面積の合計、最終的なリブ面積、桁穴周、リブキャップ長さ、プランク長さ、後縁補強材の面積、リブの種類（0:肉抜き無、１肉抜きアリ、２半リブ）、リブの厚み、プランク厚み,端リブ補強材面積(肉抜き無)、,端リブ補強材面積(肉抜き無),プランク端補強材の面積の順
+# 肉抜き前リブ面積、半リブ面積の合計、最終的なリブ面積、桁穴周、リブキャップ長さ、プランク長さ、後縁補強材の面積、リブの種類（0:肉抜き無、１肉抜きアリ、２半リブ）、リブの厚み、プランク厚み,端リブ補強材面積(肉抜き無),プランク端補強材の面積の順
 
 
 def ribuWeight():  # リブのスタイロの部分の重量
@@ -74,22 +74,24 @@ def ribuFixWeight():  # 桁穴周りのリブ接着材重量
     return totalLengthOfKetaanaMawari * ribFixKetaanaDensity
 
 
+# 端リブ補強材の肉抜きを行う場合は未考慮
+# 肉抜きアリで設定しても、肉抜きをしていない状態で出力される
 def tannRibuHokyou():
     totalWeightOfEndRibHokyou = 0
     if ribuTotalData[0][7] == 1:
-        areaHokyouArea = ribuTotalData[0][2] * 2
+        areaHokyouArea = ribuTotalData[0][10] * 2
         weightOfRibuHokyouTannribu = areaHokyouArea * tannribuHokyouDensity
         totalWeightOfEndRibHokyou += weightOfRibuHokyouTannribu
     if ribuTotalData[0][7] == 0:
-        areaHokyouArea = ribuTotalData[0][0] * 2
+        areaHokyouArea = ribuTotalData[0][10] * 2
         weightOfRibuHokyouTannribu = areaHokyouArea * tannribuHokyouDensity
         totalWeightOfEndRibHokyou += weightOfRibuHokyouTannribu
     if ribuTotalData[-1][7] == 1:
-        areaHokyouArea = ribuTotalData[-1][2] * 2
+        areaHokyouArea = ribuTotalData[-1][10] * 2
         weightOfRibuHokyouTannribu = areaHokyouArea * tannribuHokyouDensity
         totalWeightOfEndRibHokyou += weightOfRibuHokyouTannribu
     if ribuTotalData[-1][7] == 0:
-        areaHokyouArea = ribuTotalData[-1][0] * 2
+        areaHokyouArea = ribuTotalData[-1][10] * 2
         weightOfRibuHokyouTannribu = areaHokyouArea * tannribuHokyouDensity
         totalWeightOfEndRibHokyou += weightOfRibuHokyouTannribu
     return totalWeightOfEndRibHokyou
@@ -174,7 +176,7 @@ def weightOfRyoumennTeap():  # 両面テープの重量 ここについては、
 def weightOfPlankEndHokyou():
     areaPlankHokyou = 0  # プランク端補強材の面積を保持する変数
     for ribDate in ribuTotalData:
-        addPlankHokyou = ribDate[12]
+        addPlankHokyou = ribDate[11]
         areaPlankHokyou += addPlankHokyou
     return areaPlankHokyou * tannribuHokyouDensity
 
