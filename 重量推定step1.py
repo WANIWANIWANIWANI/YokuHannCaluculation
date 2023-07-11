@@ -14,7 +14,7 @@
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
 ProjectName = "aaa"
-
+exportFileName = "0711TEST33.xlsx"
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
 RootChord = 1344
@@ -1168,6 +1168,6 @@ df = pd.DataFrame(
         "プランク端補強材の面積": excelPlankEndHokyou,
     }
 )
-df.to_excel("0711TEST33.xlsx")  # ここに出力したいファイル名を設定する
+df.to_excel(exportFileName)  # ここに出力したいファイル名を設定する
 
 print("completed")
