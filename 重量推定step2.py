@@ -2,34 +2,34 @@ import pandas as pd
 
 # 各定数を以下で設定する（試作）
 ribFixKetaanaDensity = 0.007  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
-tannribuHokyouDensity = 0.000335  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
-ribCapDensity = 0.000335  # リブキャップの密度（g/リブキャップ１mm²）
+tannribuHokyouDensity = 0.00026  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
+ribCapDensity = 0.00026  # リブキャップの密度（g/リブキャップ１mm²）
 densityOfKouennzai = 0.0001294  # 後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
 densityOfStringer = 0.0001294  # ストリンガーの密度（ｇ/mm³） つまり、2024的にはバルサの密度を書けばよい
-densityOfRyoumennteap = 0  # 両面テープの密度（g/mm2）
+densityOfRyoumennteap = 0.001  # 両面テープの密度（g/mm2）
 
 # １次構造
-weightOfketa = 1737  # 桁の重量(g)
-weightOfFrange = 219  # フランジの重量
+weightOfketa = 1137  # 桁の重量(g)
+weightOfFrange = 367  # フランジの重量
 weightOfKannzashi = 0  # かんざしの重量
 
 # 既知の値
-lengthOfKeta = 2910  # 桁の長さ
+lengthOfKeta = 3221  # 桁の長さ
 numberOfRyoumennteapForVerticalForYokugenn = 7  # 翼弦に対して垂直な方向の両面テープ数
 sutairoDensity = 0.000031  # スタイロの密度(g/mm3)
 ketaLengthFrangeinsideToFrangeInside = 2000  # 桁長さ
-NumberOfStringer = 6  # ストリンガーの本数
+NumberOfStringer = 5  # ストリンガーの本数
 lengthOfstringerSide1 = 5  # ストリンガーの一辺の長さ
 lengthOFStringerSide2 = 5  # ストリンガーの一辺の長さ
-densityOfFilm = 0.0000002  # フィルムの密度（ｇ/mm³）
+densityOfFilm = 0.00001  # フィルムの密度（ｇ/mm³）
 crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
 # 読み取りファイルと書き出しファイルの設定a
-yokuNumber = "0711TEST3"  # 条件を記入
-readingFilePath = r"C:\Users\ryota2002\Documents\libu\0711TEST33.xlsx"
+yokuNumber = "016期3翼の推定重量"  # 条件を記入
+readingFilePath = r"C:\Users\ryota2002\Documents\libu\16期3翼重量推定試運用0811.xlsx"
 
 # リブ枚数
-numberOfRib = 16
+numberOfRib = 20
 
 
 # Excelファイルの取り込み

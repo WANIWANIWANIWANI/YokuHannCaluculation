@@ -14,11 +14,11 @@
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
 ProjectName = "aaa"
-exportFileName = "0711TEST33.xlsx"
+exportFileName = "16期3翼重量推定試運用0811.xlsx"
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
-RootChord = 1344
-EndChord = 1216
+RootChord = 1124
+EndChord = 1016
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 EndDelta = 0
@@ -29,9 +29,9 @@ EndR = 31
 RootFoilName = "DAE-21 AIRFOIL.dat"
 EndFoilName = "DAE-21 AIRFOIL.dat"
 # リブ枚数
-n = 16
+n = 13
 # 何翼?
-PlaneNumber = "0"
+PlaneNumber = "4"
 # 半リブあり?
 use_half = False
 
@@ -44,9 +44,9 @@ e = 5
 t = 1
 # 桁径[mm]	楕円の短軸方向
 # 49.5
-d = 112
+d = 55
 # 桁径		楕円の長軸-短軸 円なら0
-dd = 112 - d
+dd = 55 - d
 # アセンブリ棒径[mm]
 da = 30
 # アセンブリ棒余白[mm]
@@ -72,15 +72,15 @@ w_circle = 15
 
 # 上面下面で同じ値を指定することは不可
 # 後縁補強材上辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_U = 75
+startPointOfKouennHokyou_U = 99.8
 # 後縁補強材下辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_D = 80
+startPointOfKouennHokyou_D = 99.9
 
 # 上面下面で同じ値を指定することは不可
 # 端リブ補強材上辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_U = 20
+startPointOfendRibHokyou_U = 0
 # 端リブ強材下辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_D = 35
+startPointOfendRibHokyou_D = 0.1
 
 # 位置関連 halfRibの面積計算用
 # プランク上開始位置[%]
@@ -96,9 +96,9 @@ xsl = 20 + e
 # プランク端補強開始位置(翼弦に対する％)(上面最後縁のストリンガー位置を設定)
 plankHokyouStartRate_U = 57
 # プランク端補強終了位置（翼弦に対する％）
-plankHokyouEndPoint_U = rpu + 4  # 値を小さくしすぎるとエラーになる
+plankHokyouEndPoint_U = rpu + 0.01  # 値を小さくしすぎるとエラーになる
 # プランク補強材の厚み(最大翼厚にたいする％で表示)
-plankHokyouStringerPlusA = 3
+plankHokyouStringerPlusA = 0.01
 
 
 # 機体諸元
