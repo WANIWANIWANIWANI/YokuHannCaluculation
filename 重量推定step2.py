@@ -1,23 +1,23 @@
 import pandas as pd
 
 # 各定数を以下で設定する（試作）
-ribFixKetaanaDensity = 0.007  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
-tannribuHokyouDensity = 0.000335  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
-ribCapDensity = 0.000335  # リブキャップの密度（g/リブキャップ１mm²）
-densityOfKouennzai = 0.0001294  # 後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
-densityOfStringer = 0.0001294  # ストリンガーの密度（ｇ/mm³） つまり、2024的にはバルサの密度を書けばよい
+ribFixKetaanaDensity = 0.0070  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
+tannribuHokyouDensity = 0.00078  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
+ribCapDensity = 0.00074  # リブキャップの密度（g/リブキャップ１mm²）
+densityOfKouennzai = 0.0001800  # 後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
+densityOfStringer = 0.0001800  # ストリンガーの密度（ｇ/mm³） つまり、2024的にはバルサの密度を書けばよい
 densityOfRyoumennteap = 0.000033  # 両面テープの密度（g/mm2）
 
 # １次構造
-weightOfketa = 1137  # 桁の重量(g)
-weightOfFrange = 363  # フランジの重量
+weightOfketa = 516  # 桁の重量(g)
+weightOfFrange = 131  # フランジの重量
 weightOfKannzashi = 0  # かんざしの重量
 
 # 既知の値
-lengthOfKeta = 3221  # 桁の長さ
+lengthOfKeta = 2433  # 桁の長さ
 numberOfRyoumennteapForVerticalForYokugenn = 7  # 翼弦に対して垂直な方向の両面テープ数
-sutairoDensity = 0.000031  # スタイロの密度(g/mm3)
-ketaLengthFrangeinsideToFrangeInside = 2000  # 桁長さ
+sutairoDensity = 0.000030  # スタイロの密度(g/mm3)
+ketaLengthFrangeinsideToFrangeInside = 2433  # 桁長さ
 NumberOfStringer = 6  # ストリンガーの本数
 lengthOfstringerSide1 = 5  # ストリンガーの一辺の長さ
 lengthOFStringerSide2 = 5  # ストリンガーの一辺の長さ
@@ -33,11 +33,11 @@ NumberOfRyoumennTeapForKeta = 6  # 桁方向の両面テープの本数を入力
 averageWidesOfRyoumennTeapForKeta = 10  # 桁方向の両面テープの平均幅(mm)を入力する
 
 # 読み取りファイルと書き出しファイルの設定a
-yokuNumber = "0811予測"  # 条件を記入
-readingFilePath = r"C:\Users\ryota2002\Documents\libu\16期機体(重量計算式調整)\16期4翼.xlsx"
+yokuNumber = "16期1yoku"  # 条件を記入
+readingFilePath = r"C:\Users\ryota2002\Documents\libu\16期1翼重量9月.xlsx"
 
 # リブ枚数
-numberOfRib = 20
+numberOfRib = 16
 
 
 # Excelファイルの取り込み
