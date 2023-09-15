@@ -2,7 +2,7 @@
 # 使いかた
 # 下記Directoryに翼型をすべていれておく。必要に応じて変える。
 # 翼型は 後縁->上->前縁->下->後縁 の順になっていることを確認
-# 翼弦長などの定義に注意(特にこれ大事)
+# 翼弦長などの定義に注意
 # 三角肉抜きが変な形になるときは、w_triやr_triを小さく調整するとよい
 # ただし、小さくしすぎるとリブが折れるかもしれないので気を付ける
 
@@ -11,48 +11,51 @@
 # 設定
 
 # ファイル関連
+# 出力するテキストファイルの名前。拡張子は不要
+ProjectName = "16期１翼"
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\libu"
-ProjectName = "aaa"
-exportFileName = "16期1翼重量9月.xlsx"
+
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
-RootChord = 1341
-EndChord = 1248
+RootChord = 937
+EndChord = 712
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
+
 EndDelta = 0
 # 端、根の桁位置[%]
 RootR = 31
 EndR = 31
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "DAE-41.dat"
-EndFoilName = "DAE-41.dat"
+RootFoilName = "dae21.dat"
+EndFoilName = "dae21.dat"
 # リブ枚数
-n = 16
+n = 3
 # 何翼?
-PlaneNumber = "0"
+PlaneNumber = "4"
 # 半リブあり?
-use_half = False
+use_half = True
 
 # リブ以外の要素関連
 # プランク厚さ[mm]
 tp = 2.7
-# ストリンガー断面の一辺[mm]
+# ストリンガー断面の一辺[mm](翼弦垂直方向)
 e = 5
+# ストリンガー断面の１辺[mm](翼弦平行方向)
+e1 = 5.5
 # リブキャップ厚さ[mm]
 t = 1
 # 桁径[mm]	楕円の短軸方向
-# 49.5
-d = 55
+d = 60
 # 桁径		楕円の長軸-短軸 円なら0
-dd = 55 - d
+dd = 60 - d
 # アセンブリ棒径[mm]
-da = 30
+da = 30  # 元は30
 # アセンブリ棒余白[mm]
 h = 7
 # 後縁材の前縁側の辺の長さ[mm]
-ht = 8
+ht = 8  # 元は8
 # 前縁材があるか boolean
 use_l = False
 # 前縁材の端線、水平線,offset線の出力
@@ -70,43 +73,31 @@ first_light_r = 10
 # 丸肉抜き 最小骨格幅[mm]
 w_circle = 15
 
-# 上面下面で同じ値を指定することは不可
-# 後縁補強材上辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_U = 99.9
-# 後縁補強材下辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_D = 99.99
-
-# 上面下面で同じ値を指定することは不可
-# 端リブ補強材上辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_U = 0.01
-# 端リブ強材下辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_D = 0.02
-
-# 位置関連 halfRibの面積計算用
+# 位置関連
 # プランク上開始位置[%]
 rpu = 60
 # プランク下開始位置[%] r plank downside
 rpd = EndR - 100 * (d / 2 + 30) / EndChord
-# ストリンガー下後縁側位置[%] r stringer downside trailing edge
+# ストリンガー下後縁側位置[%] r stringer downside trailing edge #半リブの切り取り線に依存
 rsdt = rpd + 20
 # ストリンガー前縁[mm] x stringer leading edge
 xsl = 20 + e
 
-# プランク端補強材の導入位置の設定
-# プランク端補強開始位置(翼弦に対する％)(上面最後縁のストリンガー位置を設定)
-plankHokyouStartRate_U = 57
-# プランク端補強終了位置（翼弦に対する％）
-plankHokyouEndPoint_U = rpu + 0.01  # 値を小さくしすぎるとエラーになる
-# プランク補強材の厚み(最大翼厚にたいする％で表示)
-plankHokyouStringerPlusA = 3
-
+# 設定値はあざみ野の翼を参考にしている
+# ストリンガー位置翼上部[%]
+stringerU1Rate = 4
+stringerU2Rate = 14
+stringerU3Rate = 57
+# ストリンガー位置翼下部[%]
+stringerD1Rate = 2
+stringerD2Rate = 6
+stringerD3Rate = rpd - 3
 
 # 機体諸元
-# 0翼取り付け角[°](定常飛行迎角)
-alpha = 0
+# 0翼取り付け角[°]
+alpha = -6.5
 # 後退角(リブ厚みの修正用)[°]
 sweep = 0
-
 
 # 設定おわり
 # ------------------------------------------------------------------------------------------
@@ -114,7 +105,6 @@ sweep = 0
 
 import os
 import numpy
-from scipy import integrate
 
 # import matplotlib.pyplot as pyplot
 import scipy.interpolate as interp
@@ -125,7 +115,9 @@ import math
 
 sin, cos, tan, atan2 = (math.sin, math.cos, math.tan, math.atan2)
 from scipy.optimize import fsolve
-import numpy as np
+import warnings
+import csv
+import time
 
 os.chdir(Directory)  # ディレクトリ移動
 
@@ -231,10 +223,12 @@ class stringer:
 
     @property
     def D(self):
+        ABVec_e = self.AB / abs(self.AB)
+        ABVecForLineAD = ABVec_e * e1  # ABベクトルの長さをe1へ、これを回転させてADベクトルを作る
         if not self.R:
-            return self.A + self.AB.i
+            return self.A + ABVecForLineAD.i
         else:
-            return self.A - self.AB.i
+            return self.A - ABVecForLineAD.i
 
     @property
     def C(self):
@@ -301,23 +295,6 @@ def WriteCircle(file, circle, O=vector(0, 0), WriteCenter=True):
         line(file, circle.O + vector(5, 0), circle.O + vector(-5, 0), O)
 
 
-# ２点を通る方程式
-# (y=数値) or (x=数値) or (y=mx+n)　#line[傾きm、ｙ切片n]
-def makeLinearEquation(x1, y1, x2, y2):
-    line = []
-    if y1 == y2:
-        # y軸に平行な直線
-        line["y"] = y1
-    elif x1 == x2:
-        # x軸に平行な直線
-        line["x"] = x1
-    else:
-        # y = mx + n
-        line.append((y1 - y2) / (x1 - x2))
-        line.append(y1 - (line[0] * x1))
-    return line
-
-
 def div_P(P1, P2, known, index):
     """
     P1,P2を結ぶ直線上にP3があってP3.index=knownがわかっているとき、その点をvectorとして返す。
@@ -338,21 +315,16 @@ def div_P2(P1, P2, ratio):
 
 def WriteStringer(file, stringer, O=vector(0, 0)):
     """上のstringerを入力にしてこれを描くコマンドを出力"""
+    extentionLineVector_onDA = (stringer.A - stringer.D) * 1.20 + stringer.D
+    extentionLineVector_onCB = (stringer.B - stringer.C) * 1.20 + stringer.C
+    line(file, stringer.D, extentionLineVector_onDA, O)
+    line(file, stringer.C, extentionLineVector_onCB, O)
     file.write(
         """line
 {ax},{ay}
-{bx},{by}
-{cx},{cy}
 {dx},{dy}
-{ax},{ay}
-
-line
-{ax},{ay}
 {cx},{cy}
-
-line
 {bx},{by}
-{dx},{dy}
 
 """.format(
             ax=stringer.A.x + O.x,
@@ -472,7 +444,7 @@ def define_Oa(
     # 円の半径に使う
     r = da / 2 + h
     FoilPs = [EndFoilPs, RootFoilPs]
-
+    print(str(FoilPs[0][0]) + str(FoilPs[1][0]))
     Os = [EndPipeO, RootPipeO]
 
     ret = [0, 0]
@@ -516,13 +488,6 @@ def WriteText(file, O, text, height=20, angle=0):
     Oから始める。フォントの高さはheight、angleは字の角度[°]
     """
     file.write(f"text\n{O.x},{O.y}\n{str(height)}\n{str(angle)}\n{text}\n\n")
-
-
-def find_nearest(array, value):  # 配列の中身の内最もvalueの値に近いものを取り出す
-    array = np.asarray(array)
-    idx = (np.abs(array - value)).argmin()
-    index = array.__index__
-    return array[idx]
 
 
 # 関数、クラス定義おわり
@@ -613,25 +578,12 @@ file = open(f"{ProjectName}.txt", "w")
 file.write("texted\n1\n")  # textをコマンドで入力できるように設定
 file.write("-lweight\n0.001\n")  # 線の太さ設定
 
-# excel出力用のリスト
-excelareayokuGata = []
-excelareatotalAreaOfNikunuki = []
-excelareaTotalRibu = []
-excellengthOfKetaanaMawari = []
-excelLengthOfRibCapTotal = []
-excelLengthOfPlankTotal = []
-excelKouennHokyou = []
-excelareaHalfRib = []
-excelEndRibHokyou = []
-excelPlankEndHokyou = []
-
-
 O = vector(0, 0)  # それぞれのリブの前縁のy座標
 y_u, y_d = [], []  # 定義前に使うと誤解されないように
 for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     # y座標の設定 かぶらないようにするため。1cmの隙間もあける
     if k > 1:  # k=1のときO=(0,0)にしている
-        O.y -= numpy.max(y_u) - numpy.min(y_d) + 10
+        O.y -= numpy.max(y_u) - numpy.min(y_d) + 150
 
     # 翼型の点のリストの出力。 上下の翼型を関数として作成。
     # 混ぜる割合。　根で0、端で1。
@@ -643,6 +595,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     f_dEnd = inter(EndFoilDataD_x * c * cos(sweep), EndFoilDataD_y * c)
     f_uRoot = inter(RootFoilDataU_x[::-1] * c * cos(sweep), RootFoilDataU_y[::-1] * c)
     f_dRoot = inter(RootFoilDataD_x * c * cos(sweep), RootFoilDataD_y * c)
+
     # x座標の列を端と同じにする
     s = numpy.linspace(0, 1, 200)
     x_d = numpy.delete(
@@ -676,6 +629,12 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     # 境目になるようなx座標を定義する
     x_plank_u = c * (rpu / 100) * cos(sweep)
     x_plank_d = c * (rpd / 100) * cos(sweep)
+    x_stringer_u1 = c * (stringerU1Rate / 100) * cos(sweep)
+    x_stringer_u2 = c * (stringerU2Rate / 100) * cos(sweep)
+    x_stringer_u3 = c * (stringerU3Rate / 100) * cos(sweep)
+    x_stringer_D1 = c * (stringerD1Rate / 100) * cos(sweep)
+    x_stringer_D2 = c * (stringerD2Rate / 100) * cos(sweep)
+    x_stringer_D3 = c * (stringerD3Rate / 100) * cos(sweep)
     x_stringer_dt = c * rsdt / 100 * cos(sweep)
     x_pipe = c * (RootR + (EndR - RootR) * r) / 100 * cos(sweep)
     x_25pc = c * cos(sweep) * 0.25
@@ -698,6 +657,85 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         [FoilD[i] for i in range(len(FoilD) - 2) if FoilD[i + 2].x >= x_plank_d], t, 0
     )
 
+    # ストリンガーの出力
+    StringerU = stringer(div_P(PlankPsU[0], PlankPs[1], x_plank_u, 0), PlankPs[1], e)
+    StringerDL = stringer(
+        div_P(PlankPs[-1], PlankPs[-2], x_plank_d, 0), PlankPs[-2], e, R=True
+    )  # leading edge
+    EdgeDT = [
+        RibCap_dPs[i]
+        for i in range(1, len(RibCap_dPs))
+        if RibCap_dPs[i - 1].x <= x_stringer_dt
+    ][
+        -2:
+    ]  # StringerDT.Aを挟む点
+    StringerDT = stringer(
+        div_P(EdgeDT[0], EdgeDT[1], x_stringer_dt, 0), EdgeDT[0], e, R=True
+    )  # trailing edge
+
+    stringerDT_vec = [
+        RibCap_dPs[i]
+        for i in range(1, len(RibCap_dPs))
+        if RibCap_dPs[i - 1].x <= x_stringer_dt
+    ][-2:]
+    stringerU1 = [
+        PlankPsU[i]
+        for i in range(1, len(PlankPsU))
+        if PlankPsU[i - 1].x <= x_stringer_u1
+    ][-2:]
+    stringerU1ToVec = stringer(
+        div_P(stringerU1[0], stringerU1[1], x_stringer_u1, 0), stringerU1[0], e
+    )
+
+    stringerU2 = [
+        PlankPsU[i]
+        for i in range(1, len(PlankPsU))
+        if PlankPsU[i - 1].x <= x_stringer_u2
+    ][-2:]
+    stringerU2ToVec = stringer(
+        div_P(stringerU2[0], stringerU2[1], x_stringer_u2, 0), stringerU2[0], e
+    )
+
+    stringerU3 = [
+        PlankPsU[i]
+        for i in range(1, len(PlankPsU))
+        if PlankPsU[i - 1].x <= x_stringer_u3
+    ][-2:]
+    stringerU3ToVec = stringer(
+        div_P(stringerU3[0], stringerU3[1], x_stringer_u3, 0), stringerU3[0], e
+    )
+
+    stringerD1 = [
+        PlankPsD[i]
+        for i in range(1, len(PlankPsD))
+        if PlankPsD[i - 1].x <= x_stringer_D1
+    ][-2:]
+    stringerD1ToVec = stringer(
+        div_P(stringerD1[0], stringerD1[1], x_stringer_D1, 0), stringerD1[0], e, R=True
+    )
+
+    stringerD2 = [
+        PlankPsD[i]
+        for i in range(1, len(PlankPsD))
+        if PlankPsD[i - 1].x <= x_stringer_D2
+    ][-2:]
+    stringerD2ToVec = stringer(
+        div_P(stringerD2[0], stringerD2[1], x_stringer_D2, 0), stringerD2[0], e, R=True
+    )
+
+    stringerD3 = [
+        PlankPsD[i]
+        for i in range(1, len(PlankPsD))
+        if PlankPsD[i - 1].x <= x_stringer_D3
+    ][-2:]
+    stringerD3ToVec = stringer(
+        div_P(stringerD3[0], stringerD3[1], x_stringer_D3, 0), stringerD3[0], e, R=True
+    )
+
+    # プランク線pipe.bの端を切り取る
+    del PlankPs[0], PlankPs[-1]
+    PlankPs = [StringerU.A] + PlankPs + [StringerDL.A]  # 端点をストリンガーの頂点と一致させる。
+
     # 桁穴の出力 y座標は25%のcamber位置で固定
     delta = RootDelta + (EndDelta - RootDelta) * r
     RibAngle = math.atan(tan((alpha + delta) * numpy.pi / 180) * cos(sweep))
@@ -705,6 +743,12 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     Pipe = ellipse(
         Pipe_C, Pipe_C + vector(0, 1).rotate(RibAngle, "radian") * (d + dd) / 2, d / 2
     )
+
+    # 水平、鉛直線関連
+    hlineP1 = Pipe_C + vector(0, 1).rotate(RibAngle, "radian").i * c * 0.35
+    hlineP2 = Pipe_C - vector(0, 1).rotate(RibAngle, "radian").i * c * 0.35
+    vlineP1 = Pipe_C + vector(1, 0).rotate(RibAngle, "radian").i * c * 0.07
+    vlineP2 = Pipe_C - vector(1, 0).rotate(RibAngle, "radian").i * c * 0.07
 
     # アセンブリ棒穴の出力
     Assembly = circle(da / 2, Oa + Pipe_C)
@@ -763,411 +807,345 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             ).i
             * tp
         )
+    ##トラス肉抜きを行う
+    # 肉抜きを行う際の変数を保持
+    # 桁穴とトラス肉抜き基準点の最も桁穴に近い点のx座標の距離を指定する（0.＠＠の形で表現）
+    rateOfNikunukiRestrictedForKetaanaMawari = 0
+    # 後縁の最終肉抜き基準点のｘ座標を入力する（0.＠＠の形で表現）
+    rateOfRestrictedForKouenn_U = 0.80
+    rateOfRestrictedForKouenn_D = 0.85
 
-    # 三角肉抜き出力
-    # 三角形の頂点の円
-    x_tri_lead = c * cos(sweep) * first_light_r / 100  # 最外
-    x_tri_trail = Pipe_C.x - Pipe.b - w_tri
-    # 三角形の頂点の中心のx,y座標のリスト
-    # 前縁側 左下、右下、上の順
-    x_tl = [x_tri_lead, (x_tri_lead + x_tri_trail) / 2]  # 2つ目まで
-    y_tl = [
-        f_d(x_tl[0]) + w_tri + r_tri,
-        f_d(x_tl[1]) + w_tri + r_tri,
-        f_u(x_tl[1]) - w_tri - r_tri,
-    ]
-    x_tl = x_tl + [
-        x_tl[1] - (y_tl[2] - y_tl[1]) * tan((2 * r_tri + w_tri) / (y_tl[2] - y_tl[1]))
-    ]
-    y_tl[2] = f_u(x_tl[2]) - w_tri - r_tri
-    tri_lead_circles = [circle(r_tri, vector(x_tl[i], y_tl[i])) for i in range(3)]
-    tri_lead_lines = [
-        offset([tri_lead_circles[i - 1].O, tri_lead_circles[i].O], r_tri, 1, 1)
-        for i in range(3)
-    ]
-    # 前縁側 右上、左上、下の順
-    x_tt = [x_tri_trail, x_tl[1]]
-    y_tt = [
-        f_u(x_tt[0]) - w_tri - r_tri,
-        f_u(x_tt[1]) - w_tri - r_tri,
-        f_u((x_tri_lead + x_tri_trail) / 2) - w_tri - r_tri,
-    ]
-    x_tt = x_tt + [
-        x_tt[1] + (y_tl[2] - y_tl[1]) * tan((2 * r_tri + w_tri) / (y_tl[2] - y_tl[1]))
-    ]
-    y_tt[2] = f_d(x_tt[2]) + w_tri + r_tri
-    tri_trail_circles = [circle(r_tri, vector(x_tt[i], y_tt[i])) for i in range(3)]
-    tri_trail_lines = [
-        offset([tri_trail_circles[i - 1].O, tri_trail_circles[i].O], r_tri, 1, 1)
-        for i in range(3)
-    ]
+    # 引数として渡した２点のx座標の中点がx座標となるような第三引数上の座標を返す関数
+    def findMidPointOfBasePoint(point1, point2, arrayOfSearched):
+        midPoint_x = (point1.x + point2.x) / 2
+        midPoint = [
+            arrayOfSearched[i]
+            for i in range(1, len(arrayOfSearched))
+            if arrayOfSearched[i - 1].x <= midPoint_x
+        ][-2:]
+        return midPoint
 
-    # 丸肉抜き出力 前縁から
-    # 最前縁の丸の中心の座標
-    x_cir = Pipe.C.x + (d + dd) / 2
-    x_cir += (f_u(x_cir) - f_d(x_cir)) / 2
-    light_Cs = [
-        circle((f_u(x_cir) - f_d(x_cir)) / 2 - w_circle, vector(x_cir, f_camber(x_cir)))
-    ]
-    i = 1
-    while True:
-        x_cir = light_Cs[i - 1].O.x + light_Cs[i - 1].r
-        x_cir += (f_u(x_cir) - f_d(x_cir)) / 2
-        light_Cs += [
-            circle(
-                (f_u(x_cir) - f_d(x_cir)) / 2 - w_circle, vector(x_cir, f_camber(x_cir))
-            )
-        ]
-        # Assembly棒より前縁側にあるとき
-        if not light_Cs[i].O.x + light_Cs[i].r < Assembly.O.x - Assembly.r - w_circle:
-            light_Cs = light_Cs[:-1]  # 被ったのはとりのぞく
-            break
-        i += 1
+    # arrayの形で渡された点の集まりから、第一引数のｘに最も近い座標を返すための関数
+    def findNearestPointBasedOnX(x, arrayOfSearch):
+        return [
+            arrayOfSearch[i]
+            for i in range(1, len(arrayOfSearch))
+            if arrayOfSearch[i - 1].x <= x
+        ][-2:]
 
-    # 後縁補強材を構成する点のリストを出六
-    x_stratPointOfKouennzai_U = c * (startPointOfKouennHokyou_U / 100) * cos(sweep)
-    x_stratPointOfKouennzai_D = c * (startPointOfKouennHokyou_D / 100) * cos(sweep)
+    # 肉抜き基準点とする３点を引数,第４引数へ相似比渡すと、重心が一致する、任意の相似比を持った三角形が出力される関数
+    def makeSannkakuNikunuki(base1, base2, base3, rate, file):
+        print("nake sannkaku")
+        juushinn = (base1 + base2 + base3) / 3
+        v1 = (juushinn - base1) / abs((juushinn - base1))
+        v2 = (juushinn - base2) / abs((juushinn - base2))
+        v3 = (juushinn - base3) / abs((juushinn - base3))
+        nikunukiPoint1 = base1 + v1 * abs((juushinn - base1)) * rate
+        nikunukiPoint2 = base2 + v2 * abs((juushinn - base2)) * rate
+        nikhnukiPoint3 = base3 + v3 * abs((juushinn - base3)) * rate
+        print("line")
+        line(file, nikunukiPoint1, nikunukiPoint2, O)
+        line(file, nikunukiPoint2, nikhnukiPoint3, O)
+        line(file, nikhnukiPoint3, nikunukiPoint1, O)
 
-    KouennHokyou_U_X = []  # 後縁補強材上側のｘ座標を保持する配列
-    KouennHokyou_U_Y = []  # 後縁補強材上側のｙ座標を保持する配列
-    KouennHokyou_D_X = []  # 後縁補強材下側のｘ座標を保持する配列
-    KouennHokyou_D_Y = []  # 後縁補強材下側のｙ座標を保持する配列
-    for i in range(len(x_u)):  # 上記のリストへ
-        if x_u[i] >= x_stratPointOfKouennzai_U:
-            KouennHokyou_U_X.append(x_u[i])
-            KouennHokyou_U_Y.append(y_u[i])
-        if x_d[i] >= x_stratPointOfKouennzai_D:
-            KouennHokyou_D_X.append(x_d[i])
-            KouennHokyou_D_Y.append(y_d[i])
+    # 肉抜き可能な範囲を示す基準点を決める
+    # 桁穴周りの４点
+    diffBetweeenPipeCRestrictedPoint_x = (
+        d / 2 + c * rateOfNikunukiRestrictedForKetaanaMawari
+    )
+    print(diffBetweeenPipeCRestrictedPoint_x)
+    restricedForKEtaana_UX_Zennenn = x_pipe - diffBetweeenPipeCRestrictedPoint_x
+    restricedForKEtaana_UX_Kouenn = x_pipe + diffBetweeenPipeCRestrictedPoint_x
+    print(restricedForKEtaana_UX_Zennenn)
+    restricedForKEtaana_U_Zennenn = findNearestPointBasedOnX(
+        restricedForKEtaana_UX_Zennenn, PlankPsU
+    )
+    restrictedForKetana_D_Zennenn = findNearestPointBasedOnX(
+        restricedForKEtaana_UX_Zennenn, RibCap_dPs
+    )
 
-    # 端リブ補強材を構成する点のリストを出六
-    x_stratPointOfEndRib_U = c * (startPointOfendRibHokyou_U / 100) * cos(sweep)
-    x_stratPointOfEndRib_D = c * (startPointOfendRibHokyou_D / 100) * cos(sweep)
+    restricedForKEtaana_U_Kouenn = findNearestPointBasedOnX(
+        restricedForKEtaana_UX_Kouenn, PlankPsU
+    )
+    restricedForKEtaana_D_Kouenn = findNearestPointBasedOnX(
+        restricedForKEtaana_UX_Kouenn, RibCap_dPs
+    )
 
-    endRibHokyou_U_X = []  # 後縁補強材上側のｘ座標を保持する配列
-    endRibHokyou_U_Y = []  # 後縁補強材上側のｙ座標を保持する配列
-    endRibHokyou_D_X = []  # 後縁補強材下側のｘ座標を保持する配列
-    endRibHokyou_D_Y = []  # 後縁補強材下側のｙ座標を保持する配列
-    for i in range(len(x_u)):  # 上記のリストへ
-        if x_u[i] >= x_stratPointOfEndRib_U:
-            endRibHokyou_U_X.append(x_u[i])
-            endRibHokyou_U_Y.append(y_u[i])
-        if x_d[i] >= x_stratPointOfEndRib_D:
-            endRibHokyou_D_X.append(x_d[i])
-            endRibHokyou_D_Y.append(y_d[i])
+    # 後縁材周りについて
+    restrictedForKouennMawari_Ux = c * rateOfRestrictedForKouenn_U
+    restrictedForKouennMawari_Dx = c * rateOfRestrictedForKouenn_D
 
-    # リブのデータ書き出しおわり
-    # 以下では、リブの面積を計算する
-    # 計算式の定義
-    def caluculateOfareaYokugata():
-        areaYokugataUpper = -integrate.trapz(y_u, x_u)
-        areaYokugataDown = -integrate.trapz(y_d, x_d)
-        return areaYokugataUpper + areaYokugataDown
+    restrictedForKouennMawari_U = findNearestPointBasedOnX(
+        restrictedForKouennMawari_Ux, RibCap_uPs
+    )
+    restrictedForKouennMawari_D = findNearestPointBasedOnX(
+        restrictedForKouennMawari_Dx, RibCap_dPs
+    )
 
-    def caluculationOfareaKouennHokyou():
-        areaKouennHokyouUpper = -integrate.trapz(KouennHokyou_U_Y, KouennHokyou_U_X)
-        areaKouennHokyouDown = integrate.trapz(KouennHokyou_D_Y, KouennHokyou_D_X)
-        # 積分した面積から一部を引く
-        # 引く面積をざっくりと近似（翼弦長の差分＊上下の後縁開始点のｙ座標の差分＊0.50）
-        subtractionArea = (
-            abs(x_stratPointOfKouennzai_U - x_stratPointOfKouennzai_D)
-            * abs(KouennHokyou_U_Y[0] - KouennHokyou_D_Y[0])
-            * 0.50
-        )
-        return areaKouennHokyouUpper + areaKouennHokyouDown - subtractionArea
+    # 別途説明図のような肉抜き基準点を求める
+    print(PlankPsU[0])
+    basePointNikunuki_U1 = stringerU1
+    basePointNikunuki_U2 = findMidPointOfBasePoint(
+        stringerU1[0], stringerU2[0], PlankPsU
+    )
+    basePointNikunuki_U3 = stringerU2
+    basePointNikunuki_U4 = findMidPointOfBasePoint(
+        stringerU2[0], restricedForKEtaana_U_Zennenn[0], PlankPsU
+    )
+    basePointNikunuki_U5 = restricedForKEtaana_U_Zennenn
+    basePointNikunuki_U6 = restricedForKEtaana_U_Kouenn
+    print(restricedForKEtaana_U_Kouenn)
+    print(restricedForKEtaana_U_Kouenn, stringerU3)
+    basePointNikunuki_U7 = findMidPointOfBasePoint(
+        restricedForKEtaana_U_Kouenn[0], stringerU3[0], PlankPsU
+    )
+    basePointNikunuki_U8 = stringerU3
+    basePointNikunuki_U9 = findMidPointOfBasePoint(
+        RibCap_uPs[0], restrictedForKouennMawari_U[0], RibCap_uPs
+    )
+    print(basePointNikunuki_U9)
+    basePointNIkunuki_U10 = restrictedForKouennMawari_U
 
-    def caluculateOfAreaSankakuNikunuki():
-        (ax1, ay1) = (x_tl[0], y_tl[0])
-        (bx1, by1) = (x_tl[1], y_tl[1])
-        (cx1, cy1) = (x_tl[2], y_tl[2])  # 1つ目の三角肉抜きの面積
-        (ax2, ay2) = (x_tt[0], y_tt[0])
-        (bx2, by2) = (x_tt[1], y_tt[1])
-        (cx2, cy2) = (x_tt[2], y_tt[2])  # 2つ目の三角肉抜きの面積
-        return (
-            abs((ax1 - cx1) * (by1 - ay1) - (ax1 - bx1) * (cy1 - ay1)) / 2
-            + abs((ax2 - cx2) * (by2 - ay2) - (ax2 - bx2) * (cy2 - ay2)) / 2
-        )
+    basePointNikunuki_D1 = stringerD1
+    basePointNikunuki_D2 = stringerD2
+    basePointNIkunuki_D3 = findMidPointOfBasePoint(
+        stringerD2[0], stringerD3[0], PlankPsD
+    )
+    basePointNikunuki_D4 = stringerD3
+    basePointNikunuki_D5 = restrictedForKetana_D_Zennenn
+    basePointNikuniki_D6 = restricedForKEtaana_D_Kouenn
+    basePointNikuniki_D7 = stringerDT_vec
+    basePointNikuniki_D9 = findMidPointOfBasePoint(
+        stringerDT_vec[0], restrictedForKouennMawari_D[0], RibCap_dPs
+    )
+    basePointNikuniki_D8 = findMidPointOfBasePoint(
+        stringerDT_vec[0], basePointNikuniki_D9[0], RibCap_dPs
+    )
+    basePointNikuniki_D10 = findMidPointOfBasePoint(
+        basePointNikuniki_D9[0], restrictedForKouennMawari_D[0], RibCap_dPs
+    )
+    basePointNikuniki_D11 = restrictedForKouennMawari_D[0]
 
-    def caluculationOfAreaMaruNikunuki():
-        x_cir = Pipe.C.x + (d + dd) / 2
-        x_cir += (f_u(x_cir) - f_d(x_cir)) / 2
-        light_Cs = [
-            circle(
-                (f_u(x_cir) - f_d(x_cir)) / 2 - w_circle, vector(x_cir, f_camber(x_cir))
-            )
-        ]
-        areaCirculeNikunuki = 3.14 * (light_Cs[0].r) * (light_Cs[0].r)
-        i = 1
-        while True:
-            x_cir = light_Cs[i - 1].O.x + light_Cs[i - 1].r
-            x_cir += (f_u(x_cir) - f_d(x_cir)) / 2
-            light_Cs += [
-                circle(
-                    (f_u(x_cir) - f_d(x_cir)) / 2 - w_circle,
-                    vector(x_cir, f_camber(x_cir)),
-                )
-            ]
-            areaCirculeNikunuki += 3.14 * (light_Cs[i].r) * (light_Cs[i].r)
-            # アセンブリ棒よりも前縁にある時
-            if (
-                not light_Cs[i].O.x + light_Cs[i].r
-                < Assembly.O.x - Assembly.r - w_circle
-            ):
-                light_Cs = light_Cs[-1]
-                break
-            i += 1
-        return areaCirculeNikunuki
+    # 肉抜きの出力
+    # makeSannkakuNikunuki(
+    #     basePointNikunuki_U1[0],
+    #     basePointNikunuki_D1[0],
+    #     basePointNikunuki_D2[0],
+    #     0.8,
+    #     file,
+    # )
 
-    def areaKetaana():
-        return 3.14 * d / 2 * (dd + d) / 2
+    # 現在のリブの図面を出力 要精度-黒 作成時に使う線-青 補助線-ピンク
+    # # 翼型 切らないのでピンク
+    # color(file, 255, 0, 255)
+    # spline(file, FoilPs, O)
+    # 中心線 アセンブリで見るので青
+    color(file, 0, 0, 255)
+    spline(file, CamberPs, O)
+    # プランク 切るので黒
+    color(file, 0, 0, 0)
+    spline(file, PlankPs, O)
+    # リブキャップ切るので黒
+    color(file, 0, 0, 0)
+    spline(file, RibCap_uPs, O)
+    spline(file, RibCap_dPs, O)
+    # ストリンガー出力 切るので黒
+    color(file, 0, 0, 0)
+    WriteStringer(file, StringerDT, O)
+    WriteStringer(file, stringerU1ToVec, O)
+    WriteStringer(file, stringerU2ToVec, O)
+    WriteStringer(file, stringerU3ToVec, O)
+    WriteStringer(file, stringerD1ToVec, O)
+    WriteStringer(file, stringerD2ToVec, O)
+    WriteStringer(file, stringerD3ToVec, O)
+    # WriteStringer(file, stringer(vector(xsl, 0), vector(0, 0), e, True), O)
 
-    def lengthOfketaanaShu():
-        # 桁の短軸ｄ、桁の長軸ｄｄ＋ｄ
-        a = d / 2
-        b = dd / 2
-        X = 2 * a + b  # 短軸＋長軸
-        Y = b  # 短軸ー長軸
-        Z = (Y / X) ** 2
-        W1 = 3 * Z
-        W2 = 10 + (4 - 3 * Z) ** (1 / 2)
-        return 3.14 * X * (1 + W1 / W2)
+    # トラス肉抜き
+    makeSannkakuNikunuki(
+        basePointNikunuki_U1[0],
+        basePointNikunuki_D1[0],
+        basePointNikunuki_D2[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U1[0],
+        basePointNikunuki_U2[0],
+        basePointNikunuki_D2[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U2[0],
+        basePointNIkunuki_D3[0],
+        basePointNikunuki_D2[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U2[0],
+        basePointNIkunuki_D3[0],
+        basePointNikunuki_U3[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U2[0],
+        basePointNIkunuki_D3[0],
+        basePointNikunuki_U3[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U3[0],
+        basePointNIkunuki_D3[0],
+        basePointNikunuki_D4[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U3[0],
+        basePointNikunuki_U4[0],
+        basePointNikunuki_D4[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_D5[0],
+        basePointNikunuki_U4[0],
+        basePointNikunuki_D4[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_D5[0],
+        basePointNikunuki_U4[0],
+        basePointNikunuki_U5[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikuniki_D7[0],
+        basePointNikuniki_D6[0],
+        basePointNikunuki_U6[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U6[0],
+        basePointNikuniki_D7[0],
+        basePointNikunuki_U7[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U7[0],
+        basePointNikuniki_D7[0],
+        basePointNikuniki_D8[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U7[0],
+        basePointNikuniki_D8[0],
+        basePointNikunuki_U8[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U8[0],
+        basePointNikuniki_D8[0],
+        basePointNikuniki_D9[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikuniki_D10[0],
+        basePointNikuniki_D9[0],
+        basePointNikunuki_U8[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U8[0],
+        basePointNikuniki_D9[0],
+        basePointNikuniki_D10[0],
+        0.50,
+        file,
+    )
 
-    def lengthOfPlank():
-        plank_u_ToNonVec = []  # リブキャップ上の点の集合のベクトルを外したリスト保持
-        plank_d_ToNonVec = []  # リブキャップ下の点の集合のベクトルを外したリスト保持
-        plankLength_u = 0  # リブキャップ上面の長さを保持
-        plankLength_d = 0  # リブっキャプ下面の長さを保持
-        for i in range(len(x_u)):  # 上記のリストへ
-            addition_array_PlankU_nonVec = [x_u[i], y_u[i]]
-            additional_array_PlankD_nonVec = [x_d[i], y_d[i]]
-            if addition_array_PlankU_nonVec[0] <= x_plank_u:
-                plank_u_ToNonVec.append(addition_array_PlankU_nonVec)
-            if additional_array_PlankD_nonVec[0] <= x_plank_d:
-                plank_d_ToNonVec.append(additional_array_PlankD_nonVec)
-        for i in range(len(plank_u_ToNonVec) - 1):  # 隣り合う２点間の距離を足し合わせて曲線の長さとした
-            discussP1_u = plank_u_ToNonVec[i]
-            discussP2_u = plank_u_ToNonVec[i + 1]
-            lengthOfP1P2_u = (
-                (discussP1_u[0] - discussP2_u[0]) ** 2
-                + (discussP1_u[1] - discussP2_u[1]) ** 2
-            ) ** (1 / 2)
-            plankLength_u += lengthOfP1P2_u
-        for i in range(len(plank_d_ToNonVec) - 1):
-            discussP1_d = plank_d_ToNonVec[i]
-            discussP2_d = plank_d_ToNonVec[i + 1]
-            lengthOfP1P2_d = (
-                (discussP1_d[0] - discussP2_d[0]) ** 2
-                + (discussP1_d[1] - discussP2_d[1]) ** 2
-            ) ** (1 / 2)
-            plankLength_d += lengthOfP1P2_d
-        Plank_total_Length = plankLength_u + plankLength_d
-        return Plank_total_Length
+    # プランク、リブキャップ境目出力 切るので黒
+    color(file, 0, 0, 0)
+    line(file, StringerU.A + O, div_P2(StringerU.D, StringerU.A, 1 + tp / e) + O)
+    line(file, StringerDL.A + O, div_P2(StringerDL.D, StringerDL.A, 1 + tp / e) + O)
+    # 桁穴出力切るので黒
+    color(file, 0, 0, 0)
+    WriteEllipse(file, Pipe, O)
+    # アセンブリ棒穴　切るので黒
+    color(file, 0, 0, 0)
+    WriteCircle(file, Assembly, O)
+    # 後縁材の前縁側の一辺を出力 切ると思うので黒
+    color(file, 0, 0, 0)
+    line(file, TrailU, TrailD, O)
+    # 前縁材の出力 切るが、黒だと図面が汚いので赤
+    if use_l:
+        color(file, 255, 0, 0)
+        spline(file, LeadPs, O)
+        if use_la:
+            # 前縁材の端線の出力
+            line(file, LeadPs[0], LeadEndP2U, O)
+            line(file, LeadPs[-1], LeadEndP2D, O)
+            # 前縁材の水平線を出力
+            line(file, LeadPs[0], LeadPs[0] - vector(lo, 0), O)
+            line(file, LeadPs[-1], LeadPs[-1] - vector(lo, 0), O)
+            spline(file, offset(LeadPs, offset_l, 0, 1), O)
+    # 水平、鉛直線 特別に緑
+    color(file, 0, 170, 0)
+    line(file, hlineP1, hlineP2, O)
+    line(file, vlineP1, vlineP2, O)
+    # 番号出力 切らないのでピンク
+    color(file, 255, 0, 255)
+    WriteText(
+        file, vector(c * 0.05, O.y + f_camber(c * 0.05)), f"{PlaneNumber}-{k}", height=7
+    )
 
-    def caluculationOfAreaEndRibHokyou():
-        ##積分面積を保持(翼弦を積分軸にして積分の実行)
-        areaHalflib_u = -integrate.trapz(endRibHokyou_U_Y, endRibHokyou_U_X)
-        areaHalflib_d = integrate.trapz(endRibHokyou_D_Y, endRibHokyou_D_X)
-        totalAreaIntegrateEndRib = areaHalflib_u + areaHalflib_d
-        ##足し引きして調整する部分の面積
-        # 翼上面の補強開始点と下面の補強開始点を結ぶ１次関数を求める
-        linearObject = makeLinearEquation(
-            x_stratPointOfEndRib_U,
-            x_stratPointOfEndRib_D,
-            endRibHokyou_U_X[0],
-            endRibHokyou_U_Y[0],
-        )
-        # 端リブの切り取り線と中心線の接点のｘ座標を求める
-        crossingCenterAndHalfRibCutline_x = -linearObject[1] / linearObject[0]
-        # 足し引きを行う面積を求める
-        subtrackAreaU = (
-            abs(endRibHokyou_U_X[-1] - crossingCenterAndHalfRibCutline_x)
-            * abs(endRibHokyou_U_Y[-1])
-            * (1 / 2)
-        )
-        addAreaD = abs(endRibHokyou_U_X[0] - crossingCenterAndHalfRibCutline_x) * abs(
-            endRibHokyou_U_Y[0]
-        )
-        # 端リブ補強材の面積
-        areaEndRibHokyou = totalAreaIntegrateEndRib - subtrackAreaU + addAreaD
+# 設定出力 切らないのでピンク
+color(file, 255, 0, 255)
+WriteText(
+    file,
+    vector(RootChord * 1.05, 0),
+    f"""根翼弦 : {RootChord} mm
+端翼弦 : {EndChord} mm
+根ねじり上げ : {RootDelta} °
+端ねじり上げ : {EndDelta} °
+根の桁位置 : {RootR} %
+端の桁位置 : {EndR} %
+根の翼型 : {RootFoilName}
+端の翼型 : {EndFoilName}
+半リブがあるか : {use_half}
+プランク厚さ : {tp} mm
+ストリンガー断面の一辺 : {e} mm
+リブキャップ厚さ : {t} mm
+桁長軸径 : {d+dd} mm
+桁短軸径 : {d} mm
+アセンブリ棒径 : {da} mm
+アセンブリ棒余白 : {h} mm
+前縁がある : {str(use_l)}
+前縁材の前縁からのずれ : {lo} mm
+肉抜き最小骨格幅 : {w_tri} mm
+三角肉抜き端半径 : {r_tri} mm
+前縁-肉抜き 長さ : {first_light_r} mm
+丸肉抜き 最小骨格幅 : {w_circle} mm
+プランク上開始位置 : {rpu:.1f} %
+プランク下開始位置 : {rpd:.1f} %
+ストリンガー下後縁位置 : {rsdt} %
+ストリンガー前縁は前縁から : {xsl} mm
+後退角 : {sweep*180/numpy.pi} °
 
-        print(totalAreaIntegrateEndRib, "積分範囲", subtrackAreaU, "引く面積", addAreaD, "足す面積")
-        return [areaEndRibHokyou, crossingCenterAndHalfRibCutline_x]
 
-    def caluculationOfAreaHalfRib():
-        # halfRib切り取り線を決める２点を出力
-        # 上面に関してはプランク端、下面は、stringerDTの出力位置
-        # stringerDtのｘ座標を求める
-        placeStartPointOfHalfRib_D = c * rsdt / 100 * cos(sweep)
-        # この値に最も近いリブキャップ上の位置をリブ下面の切り取り点とする
-        nearestPointOfHalfRibCut_d_x = find_nearest(
-            x_d, placeStartPointOfHalfRib_D
-        )  # x座標
-        # x座標の配列内でのindexからｙ座標を配列から引き出す(indexが[]で出力される)
-        crossingCenterAndHalfRibCutline_x_index_array_in_x_d = numpy.where(
-            x_d == nearestPointOfHalfRibCut_d_x
-        )
-        if len(crossingCenterAndHalfRibCutline_x_index_array_in_x_d) > 2:
-            print("error;halfRibの切り取り線が1つに決まりません.errorを解消してください")
-        # リブ下面切り取り点のｙ座標
-        nearestPointOfHalfRibCut_d_y = y_d[
-            crossingCenterAndHalfRibCutline_x_index_array_in_x_d[0]
-        ]
-        ##翼弦に対して積分を行う
-        plank_u_ToNonVec_x = []  # プランク上のx座標の集合 xの値が大きいものから順番に配列の中に存在
-        plank_u_ToNonVec_y = []  # プランク上のｙ座標の集合
-        plank_d_ToNonVec_x = []  # プランク下のx座標の集合　ｘの値が小さいモノから順の配列に存在
-        plank_d_ToNonVec_y = []  # 　プランク下のy座標の集合
-        for i in range(len(x_u)):  # 上記のリストへ
-            if x_u[i] < x_plank_u:
-                addition_array_PlankU_x = x_u[i]
-                addition_array_PlankU_y = y_u[i]
-                plank_u_ToNonVec_x.append(addition_array_PlankU_x)
-                plank_u_ToNonVec_y.append(addition_array_PlankU_y)
-        for i in range(len(x_d)):
-            if x_d[i] < nearestPointOfHalfRibCut_d_x:
-                addition_array_PlankD_x = x_d[i]
-                addition_array_PlankD_y = y_d[i]
-                plank_d_ToNonVec_x.append(addition_array_PlankD_x)
-                plank_d_ToNonVec_y.append(addition_array_PlankD_y)
-        areaHalflib_u = -integrate.trapz(plank_u_ToNonVec_y, plank_u_ToNonVec_x)
-        areaHalflib_d = -integrate.trapz(plank_d_ToNonVec_y, plank_d_ToNonVec_x)
-        totalAreaIntegrate = areaHalflib_u + areaHalflib_d  # 翼弦を積分軸にして積分
-
-        # 積分値から引き去る部分
-        # halfribの切り取る１次関数を定義
-        linearObject = makeLinearEquation(
-            nearestPointOfHalfRibCut_d_x,
-            nearestPointOfHalfRibCut_d_y,
-            plank_u_ToNonVec_x[0],
-            plank_u_ToNonVec_y[0],
-        )
-        # halfRibの切り取り線と中心線の接点のｘ座標を求める
-        crossingCenterAndHalfRibCutline_x = -linearObject[1] / linearObject[0]
-
-        # 積分の値から足し引く部分の面積を計算する
-        # 下側については加える、上側に関しては引く
-        subtrackAreaU = (
-            abs(plank_u_ToNonVec_x[0] - crossingCenterAndHalfRibCutline_x)
-            * plank_u_ToNonVec_y[0]
-            * (1 / 2)
-        )
-        addAreaD = (
-            abs(plank_d_ToNonVec_x[-1] - crossingCenterAndHalfRibCutline_x)
-            * -plank_d_ToNonVec_y[-1]
-            * (1 / 2)
-        )
-        # halfRibの面積
-        areaHalfRib = totalAreaIntegrate - subtrackAreaU[0] + addAreaD[0]
-        return areaHalfRib
-
-    def lehgthOfRibCap():
-        ribCap_u_ToNonVec = []  # リブキャップ上の点の集合のベクトルを外したリスト保持
-        ribCap_d_ToNonVec = []  # リブキャップ下の点の集合のベクトルを外したリスト保持
-        ribCapLength_u = 0  # リブキャップ上面の長さを保持
-        ribCapLength_d = 0  # リブっキャプ下面の長さを保持
-        for i in range(len(x_u)):  # 上記のリストへ
-            addition_array_ribCapU_nonVec = [x_u[i], y_u[i]]
-            additional_array_ribCapD_nonVec = [x_d[i], y_d[i]]
-            if addition_array_ribCapU_nonVec[0] >= x_plank_u:
-                ribCap_u_ToNonVec.append(addition_array_ribCapU_nonVec)
-            if additional_array_ribCapD_nonVec[0] >= x_plank_d:
-                ribCap_d_ToNonVec.append(additional_array_ribCapD_nonVec)
-        for i in range(len(ribCap_u_ToNonVec) - 1):  # 隣り合う２点間の距離を足し合わせて曲線の長さとした
-            discussP1_u = ribCap_u_ToNonVec[i]
-            discussP2_u = ribCap_u_ToNonVec[i + 1]
-            lengthOfP1P2_u = (
-                (discussP1_u[0] - discussP2_u[0]) ** 2
-                + (discussP1_u[1] - discussP2_u[1]) ** 2
-            ) ** (1 / 2)
-            ribCapLength_u += lengthOfP1P2_u
-        for k in range(len(ribCap_d_ToNonVec) - 1):
-            discussP1_d = ribCap_d_ToNonVec[k]
-            discussP2_d = ribCap_d_ToNonVec[k + 1]
-            lengthOfP1P2_d = (
-                (discussP1_d[0] - discussP2_d[0]) ** 2
-                + (discussP1_d[1] - discussP2_d[1]) ** 2
-            ) ** (1 / 2)
-            ribCapLength_d += lengthOfP1P2_d
-        ribCap_total_Length = ribCapLength_u + ribCapLength_d
-        return ribCap_total_Length
-
-    def teaperRation():
-        return EndChord / RootChord
-
-    def caluculationOfPlankEndHokyou():
-        #####長方形部分と三角形部分の面積に分割して考える
-        ####翼の最大厚み
-        y_maxU = numpy.amax(y_u)
-        y_maxD = numpy.amin(y_d)
-        maxThicknessOfYoku = y_maxU - y_maxD
-        #####該当リブの翼弦を保持
-        x_max = numpy.amax(x_u)
-
-        # 長方形部分
-        # 桁に対して垂直な方向の長さ
-        lengthOfY = maxThicknessOfYoku * (plankHokyouStringerPlusA / 100) + e
-        # 桁に対して平行な方向の長さ
-        lengthOfX_chouhoukei = x_max * (rpu - plankHokyouStartRate_U) / 100
-        areaChouhoukei = lengthOfX_chouhoukei * lengthOfY
-
-        # 三角形部分
-        lengthOfX_square = x_max * (plankHokyouEndPoint_U - rpu) / 100
-        areaSquare = lengthOfX_square * lengthOfY * (1 / 2)
-
-        # プランク端補強の面積
-        areaPlankEndHokyou = areaChouhoukei + areaSquare
-
-        return areaPlankEndHokyou
-
-    # 計算値まとめ
-    areayokuGata = caluculateOfareaYokugata()  # 肉抜きをしないときのリブ面積
-    areaSankakuNikunuki = caluculateOfAreaSankakuNikunuki()  # リブの三角抜き面積
-    areaMaruNikunuki = caluculationOfAreaMaruNikunuki()  # リブの円形肉抜き面積
-    totalAreaOfNikunuki = areaSankakuNikunuki + areaMaruNikunuki  # 肉抜き面積の合計
-    areaHalfRib = caluculationOfAreaHalfRib()  # halfRibの面積
-    areaKetaana = areaKetaana()  # 桁穴の面積
-    areaTotalRibu = areayokuGata - totalAreaOfNikunuki - areaKetaana  # 最終的なリブ面積
-    lengthOfKetaanaMawari = lengthOfketaanaShu()  # 桁穴周
-    lengthOfRibCaptotal = lehgthOfRibCap()  # リブキャップの長さ
-    lengthOfPlanktotal = lengthOfPlank()  # プランク部分の長さ
-    areaKouennHokyou = caluculationOfareaKouennHokyou()  # 後縁補強材の面積
-    if k == 1 or k == n:
-        areaEndRibHokyou = caluculationOfAreaEndRibHokyou()[0]
-    else:
-        areaEndRibHokyou = 0
-    areaPlankTannArea = caluculationOfPlankEndHokyou()  # プランク端補強材の面積
-
-    # excel出力用リストにまとめる
-    excelareayokuGata.append(areayokuGata)
-    excelareatotalAreaOfNikunuki.append(totalAreaOfNikunuki)
-    excelareaHalfRib.append(areaHalfRib)
-    excelareaTotalRibu.append(areaTotalRibu)
-    excellengthOfKetaanaMawari.append(lengthOfKetaanaMawari)
-    excelLengthOfRibCapTotal.append(lengthOfRibCaptotal)
-    excelLengthOfPlankTotal.append(lengthOfPlanktotal)
-    excelKouennHokyou.append(areaKouennHokyou)
-    excelEndRibHokyou.append(areaEndRibHokyou)
-    excelPlankEndHokyou.append(areaPlankTannArea)
-
-# excelファイルへの書き出し
-import pandas as pd
-
-df = pd.DataFrame(
-    {
-        "フルリブ面積(mm2)": excelareayokuGata,
-        "半リブ面積(mm2)": excelareaHalfRib,
-        "肉抜きリブ面積(mm2)": excelareaTotalRibu,
-        "桁穴周(mm)": excellengthOfKetaanaMawari,
-        "リブキャップ長さ(mm)": excelLengthOfRibCapTotal,
-        "プランク長さ(mm)": excelLengthOfPlankTotal,
-        "後縁補強材の面積": excelKouennHokyou,
-        "リブの種類": 0,
-        "リブの厚み": 7,
-        "プランクの厚み": 2,
-        "端リブ補強材の面積(肉抜き無)": excelEndRibHokyou,
-        "プランク端補強材の面積": excelPlankEndHokyou,
-    }
+""",
 )
-df.to_excel(exportFileName)  # ここに出力したいファイル名を設定する
 
+
+file.close
 print("completed")

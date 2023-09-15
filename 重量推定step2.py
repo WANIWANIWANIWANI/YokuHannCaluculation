@@ -2,42 +2,34 @@ import pandas as pd
 
 # 各定数を以下で設定する（試作）
 ribFixKetaanaDensity = 0.007  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
-tannribuHokyouDensity = 0.000335  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
-ribCapDensity = 0.000335  # リブキャップの密度（g/リブキャップ１mm²）
+tannribuHokyouDensity = 0.00038  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
+ribCapDensity = 0.00038  # リブキャップの密度（g/リブキャップ１mm²）
 densityOfKouennzai = 0.0001294  # 後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
 densityOfStringer = 0.0001294  # ストリンガーの密度（ｇ/mm³） つまり、2024的にはバルサの密度を書けばよい
-densityOfRyoumennteap = 0.000033  # 両面テープの密度（g/mm2）
+densityOfRyoumennteap = 0.0000125  # 両面テープの密度（g/mm2）
 
 # １次構造
-weightOfketa = 1137  # 桁の重量(g)
-weightOfFrange = 363  # フランジの重量
+weightOfketa = 0  # 桁の重量(g)
+weightOfFrange = 0  # フランジの重量
 weightOfKannzashi = 0  # かんざしの重量
 
 # 既知の値
-lengthOfKeta = 3221  # 桁の長さ
+lengthOfKeta = 2900  # 桁の長さ
 numberOfRyoumennteapForVerticalForYokugenn = 7  # 翼弦に対して垂直な方向の両面テープ数
 sutairoDensity = 0.000031  # スタイロの密度(g/mm3)
-ketaLengthFrangeinsideToFrangeInside = 2000  # 桁長さ
-NumberOfStringer = 6  # ストリンガーの本数
+ketaLengthFrangeinsideToFrangeInside = 2900  # 桁長さ
+NumberOfStringer = 7  # ストリンガーの本数
 lengthOfstringerSide1 = 5  # ストリンガーの一辺の長さ
 lengthOFStringerSide2 = 5  # ストリンガーの一辺の長さ
-densityOfFilm = 0.0000002  # フィルムの密度（ｇ/mm³）
+densityOfFilm = 0.000001  # フィルムの密度（ｇ/mm³）
 crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
-##両面テープに関する設定
-# 翼弦平行成分
-NumberOfRyoumennTeapForYokugenn = 20  # 翼弦方向の両面テープの本数を入力する
-averageWidesOfRyoumennTeapForYokugenn = 7  # 翼弦方向の両面テープの平均幅(mm)を入力する
-# 翼弦垂直成分
-NumberOfRyoumennTeapForKeta = 6  # 桁方向の両面テープの本数を入力する
-averageWidesOfRyoumennTeapForKeta = 10  # 桁方向の両面テープの平均幅(mm)を入力する
-
 # 読み取りファイルと書き出しファイルの設定a
-yokuNumber = "0811予測"  # 条件を記入
-readingFilePath = r"C:\Users\ryota2002\Documents\libu\16期機体(重量計算式調整)\16期4翼.xlsx"
+yokuNumber = "水平尾翼"  # 条件を
+readingFilePath = r"C:\Users\ryota2002\Documents\libu\2024 本試算\2024本試算リブ間140mm垂直尾翼.xlsx"
 
 # リブ枚数
-numberOfRib = 20
+numberOfRib = 21
 
 
 # Excelファイルの取り込み
@@ -168,25 +160,16 @@ def weightOf1Dstructure():
 
 
 def weightOfRyoumennTeap():  # 両面テープの重量 ここについては、両面テープをはる位置によって要修正
-    areaRyoumennTeap = 0  # 両面テープの面積を保持する
-
-    # 翼弦成分に関して計算
-    ribLengthTotal = 0
-    for ribDate in ribuTotalData:  # リブの側面の長さを計算（各リブの側面長さを平均）
-        ribRyoumennTeapArea = ribDate[4] + ribDate[5]
-        ribLengthTotal += ribRyoumennTeapArea
-    averageLengthOfYokugenn = ribLengthTotal / len(ribuTotalData)
-    areaRyoumennTeap += (
-        averageLengthOfYokugenn
-        * NumberOfRyoumennTeapForYokugenn
-        * averageWidesOfRyoumennTeapForYokugenn
-    )
-    # 桁平行成分に関して計算
-    areaRyoumennTeap += (
-        ketaLengthFrangeinsideToFrangeInside
-        * NumberOfRyoumennTeapForKeta
-        * averageWidesOfRyoumennTeapForKeta
-    )
+    areaRyoumennTeap = 0  # 両面テープの面積を保持する変数
+    for ribDate in ribuTotalData:
+        ribRyoumennTeapArea = (ribDate[4] + ribDate[5]) * ribDate[8]  # リブの側面積
+        areaRyoumennTeap += ribRyoumennTeapArea
+    ribteapHorizonalForYokugann = (
+        lengthOfKeta
+        * numberOfRyoumennteapForVerticalForYokugenn
+        * lengthOfstringerSide1
+    )  # 桁に対して平行な両面テープ本数
+    areaRyoumennTeap += ribteapHorizonalForYokugann
     return areaRyoumennTeap * densityOfRyoumennteap
 
 
