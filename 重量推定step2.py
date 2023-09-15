@@ -105,7 +105,7 @@ def KouennHokyou():
         areaKouennHokyou = ribData[6]
         if ribData[7] != 2:
             kouennHokyouArea += areaKouennHokyou
-    return kouennHokyouArea * tannribuHokyouDensity
+    return kouennHokyouArea * tannribuHokyouDensity * 2
 
 
 def ribCapWeight():
@@ -178,7 +178,7 @@ def weightOfPlankEndHokyou():
     for ribDate in ribuTotalData:
         addPlankHokyou = ribDate[11]
         areaPlankHokyou += addPlankHokyou
-    return areaPlankHokyou * tannribuHokyouDensity
+    return areaPlankHokyou * tannribuHokyouDensity * 2
 
 
 # excelファイル出力用の値が保持される変数
