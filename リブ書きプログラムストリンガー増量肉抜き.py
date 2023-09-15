@@ -18,8 +18,8 @@ Directory = r"C:\Users\ryota2002\Documents\libu"
 
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
-RootChord = 1344
-EndChord = 1216
+RootChord = 937
+EndChord = 712
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 
@@ -28,8 +28,8 @@ EndDelta = 0
 RootR = 31
 EndR = 31
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "DAE-21 AIRFOIL.dat"
-EndFoilName = "DAE-21 AIRFOIL.dat"
+RootFoilName = "dae21.dat"
+EndFoilName = "dae21.dat"
 # リブ枚数
 n = 3
 # 何翼?
@@ -47,9 +47,9 @@ e1 = 5.5
 # リブキャップ厚さ[mm]
 t = 1
 # 桁径[mm]	楕円の短軸方向
-d = 112
+d = 60
 # 桁径		楕円の長軸-短軸 円なら0
-dd = 112 - d
+dd = 60 - d
 # アセンブリ棒径[mm]
 da = 30  # 元は30
 # アセンブリ棒余白[mm]
@@ -673,6 +673,11 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         div_P(EdgeDT[0], EdgeDT[1], x_stringer_dt, 0), EdgeDT[0], e, R=True
     )  # trailing edge
 
+    stringerDT_vec = [
+        RibCap_dPs[i]
+        for i in range(1, len(RibCap_dPs))
+        if RibCap_dPs[i - 1].x <= x_stringer_dt
+    ][-2:]
     stringerU1 = [
         PlankPsU[i]
         for i in range(1, len(PlankPsU))
@@ -802,66 +807,133 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             ).i
             * tp
         )
+    ##トラス肉抜きを行う
+    # 肉抜きを行う際の変数を保持
+    # 桁穴とトラス肉抜き基準点の最も桁穴に近い点のx座標の距離を指定する（0.＠＠の形で表現）
+    rateOfNikunukiRestrictedForKetaanaMawari = 0
+    # 後縁の最終肉抜き基準点のｘ座標を入力する（0.＠＠の形で表現）
+    rateOfRestrictedForKouenn_U = 0.80
+    rateOfRestrictedForKouenn_D = 0.85
 
-    # 三角肉抜き出力
-    # 三角形の頂点の円
-    x_tri_lead = c * cos(sweep) * first_light_r / 100  # 最外
-    x_tri_trail = Pipe_C.x - Pipe.b - w_tri
-    # 三角形の頂点の中心のx,y座標のリスト
-    # 前縁側 左下、右下、上の順
-    x_tl = [x_tri_lead, (x_tri_lead + x_tri_trail) / 2]  # 2つ目まで
-    y_tl = [
-        f_d(x_tl[0]) + w_tri + r_tri,
-        f_d(x_tl[1]) + w_tri + r_tri,
-        f_u(x_tl[1]) - w_tri - r_tri,
-    ]
-    x_tl = x_tl + [
-        x_tl[1] - (y_tl[2] - y_tl[1]) * tan((2 * r_tri + w_tri) / (y_tl[2] - y_tl[1]))
-    ]
-    y_tl[2] = f_u(x_tl[2]) - w_tri - r_tri
-    tri_lead_circles = [circle(r_tri, vector(x_tl[i], y_tl[i])) for i in range(3)]
-    tri_lead_lines = [
-        offset([tri_lead_circles[i - 1].O, tri_lead_circles[i].O], r_tri, 1, 1)
-        for i in range(3)
-    ]
-    # 前縁側 右上、左上、下の順
-    x_tt = [x_tri_trail, x_tl[1]]
-    y_tt = [
-        f_u(x_tt[0]) - w_tri - r_tri,
-        f_u(x_tt[1]) - w_tri - r_tri,
-        f_u((x_tri_lead + x_tri_trail) / 2) - w_tri - r_tri,
-    ]
-    x_tt = x_tt + [
-        x_tt[1] + (y_tl[2] - y_tl[1]) * tan((2 * r_tri + w_tri) / (y_tl[2] - y_tl[1]))
-    ]
-    y_tt[2] = f_d(x_tt[2]) + w_tri + r_tri
-    tri_trail_circles = [circle(r_tri, vector(x_tt[i], y_tt[i])) for i in range(3)]
-    tri_trail_lines = [
-        offset([tri_trail_circles[i - 1].O, tri_trail_circles[i].O], r_tri, 1, 1)
-        for i in range(3)
-    ]
+    # 引数として渡した２点のx座標の中点がx座標となるような第三引数上の座標を返す関数
+    def findMidPointOfBasePoint(point1, point2, arrayOfSearched):
+        midPoint_x = (point1.x + point2.x) / 2
+        midPoint = [
+            arrayOfSearched[i]
+            for i in range(1, len(arrayOfSearched))
+            if arrayOfSearched[i - 1].x <= midPoint_x
+        ][-2:]
+        return midPoint
 
-    # 丸肉抜き出力 前縁から
-    # 最前縁の丸の中心の座標
-    x_cir = Pipe.C.x + (d + dd) / 2
-    x_cir += (f_u(x_cir) - f_d(x_cir)) / 2
-    light_Cs = [
-        circle((f_u(x_cir) - f_d(x_cir)) / 2 - w_circle, vector(x_cir, f_camber(x_cir)))
-    ]
-    i = 1
-    while True:
-        x_cir = light_Cs[i - 1].O.x + light_Cs[i - 1].r
-        x_cir += (f_u(x_cir) - f_d(x_cir)) / 2
-        light_Cs += [
-            circle(
-                (f_u(x_cir) - f_d(x_cir)) / 2 - w_circle, vector(x_cir, f_camber(x_cir))
-            )
-        ]
-        # Assembly棒より前縁側にあるとき
-        if not light_Cs[i].O.x + light_Cs[i].r < Assembly.O.x - Assembly.r - w_circle:
-            light_Cs = light_Cs[:-1]  # 被ったのはとりのぞく
-            break
-        i += 1
+    # arrayの形で渡された点の集まりから、第一引数のｘに最も近い座標を返すための関数
+    def findNearestPointBasedOnX(x, arrayOfSearch):
+        return [
+            arrayOfSearch[i]
+            for i in range(1, len(arrayOfSearch))
+            if arrayOfSearch[i - 1].x <= x
+        ][-2:]
+
+    # 肉抜き基準点とする３点を引数,第４引数へ相似比渡すと、重心が一致する、任意の相似比を持った三角形が出力される関数
+    def makeSannkakuNikunuki(base1, base2, base3, rate, file):
+        print("nake sannkaku")
+        juushinn = (base1 + base2 + base3) / 3
+        v1 = (juushinn - base1) / abs((juushinn - base1))
+        v2 = (juushinn - base2) / abs((juushinn - base2))
+        v3 = (juushinn - base3) / abs((juushinn - base3))
+        nikunukiPoint1 = base1 + v1 * abs((juushinn - base1)) * rate
+        nikunukiPoint2 = base2 + v2 * abs((juushinn - base2)) * rate
+        nikhnukiPoint3 = base3 + v3 * abs((juushinn - base3)) * rate
+        print("line")
+        line(file, nikunukiPoint1, nikunukiPoint2, O)
+        line(file, nikunukiPoint2, nikhnukiPoint3, O)
+        line(file, nikhnukiPoint3, nikunukiPoint1, O)
+
+    # 肉抜き可能な範囲を示す基準点を決める
+    # 桁穴周りの４点
+    diffBetweeenPipeCRestrictedPoint_x = (
+        d / 2 + c * rateOfNikunukiRestrictedForKetaanaMawari
+    )
+    print(diffBetweeenPipeCRestrictedPoint_x)
+    restricedForKEtaana_UX_Zennenn = x_pipe - diffBetweeenPipeCRestrictedPoint_x
+    restricedForKEtaana_UX_Kouenn = x_pipe + diffBetweeenPipeCRestrictedPoint_x
+    print(restricedForKEtaana_UX_Zennenn)
+    restricedForKEtaana_U_Zennenn = findNearestPointBasedOnX(
+        restricedForKEtaana_UX_Zennenn, PlankPsU
+    )
+    restrictedForKetana_D_Zennenn = findNearestPointBasedOnX(
+        restricedForKEtaana_UX_Zennenn, RibCap_dPs
+    )
+
+    restricedForKEtaana_U_Kouenn = findNearestPointBasedOnX(
+        restricedForKEtaana_UX_Kouenn, PlankPsU
+    )
+    restricedForKEtaana_D_Kouenn = findNearestPointBasedOnX(
+        restricedForKEtaana_UX_Kouenn, RibCap_dPs
+    )
+
+    # 後縁材周りについて
+    restrictedForKouennMawari_Ux = c * rateOfRestrictedForKouenn_U
+    restrictedForKouennMawari_Dx = c * rateOfRestrictedForKouenn_D
+
+    restrictedForKouennMawari_U = findNearestPointBasedOnX(
+        restrictedForKouennMawari_Ux, RibCap_uPs
+    )
+    restrictedForKouennMawari_D = findNearestPointBasedOnX(
+        restrictedForKouennMawari_Dx, RibCap_dPs
+    )
+
+    # 別途説明図のような肉抜き基準点を求める
+    print(PlankPsU[0])
+    basePointNikunuki_U1 = stringerU1
+    basePointNikunuki_U2 = findMidPointOfBasePoint(
+        stringerU1[0], stringerU2[0], PlankPsU
+    )
+    basePointNikunuki_U3 = stringerU2
+    basePointNikunuki_U4 = findMidPointOfBasePoint(
+        stringerU2[0], restricedForKEtaana_U_Zennenn[0], PlankPsU
+    )
+    basePointNikunuki_U5 = restricedForKEtaana_U_Zennenn
+    basePointNikunuki_U6 = restricedForKEtaana_U_Kouenn
+    print(restricedForKEtaana_U_Kouenn)
+    print(restricedForKEtaana_U_Kouenn, stringerU3)
+    basePointNikunuki_U7 = findMidPointOfBasePoint(
+        restricedForKEtaana_U_Kouenn[0], stringerU3[0], PlankPsU
+    )
+    basePointNikunuki_U8 = stringerU3
+    basePointNikunuki_U9 = findMidPointOfBasePoint(
+        RibCap_uPs[0], restrictedForKouennMawari_U[0], RibCap_uPs
+    )
+    print(basePointNikunuki_U9)
+    basePointNIkunuki_U10 = restrictedForKouennMawari_U
+
+    basePointNikunuki_D1 = stringerD1
+    basePointNikunuki_D2 = stringerD2
+    basePointNIkunuki_D3 = findMidPointOfBasePoint(
+        stringerD2[0], stringerD3[0], PlankPsD
+    )
+    basePointNikunuki_D4 = stringerD3
+    basePointNikunuki_D5 = restrictedForKetana_D_Zennenn
+    basePointNikuniki_D6 = restricedForKEtaana_D_Kouenn
+    basePointNikuniki_D7 = stringerDT_vec
+    basePointNikuniki_D9 = findMidPointOfBasePoint(
+        stringerDT_vec[0], restrictedForKouennMawari_D[0], RibCap_dPs
+    )
+    basePointNikuniki_D8 = findMidPointOfBasePoint(
+        stringerDT_vec[0], basePointNikuniki_D9[0], RibCap_dPs
+    )
+    basePointNikuniki_D10 = findMidPointOfBasePoint(
+        basePointNikuniki_D9[0], restrictedForKouennMawari_D[0], RibCap_dPs
+    )
+    basePointNikuniki_D11 = restrictedForKouennMawari_D[0]
+
+    # 肉抜きの出力
+    # makeSannkakuNikunuki(
+    #     basePointNikunuki_U1[0],
+    #     basePointNikunuki_D1[0],
+    #     basePointNikunuki_D2[0],
+    #     0.8,
+    #     file,
+    # )
 
     # 現在のリブの図面を出力 要精度-黒 作成時に使う線-青 補助線-ピンク
     # # 翼型 切らないのでピンク
@@ -887,6 +959,120 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     WriteStringer(file, stringerD2ToVec, O)
     WriteStringer(file, stringerD3ToVec, O)
     # WriteStringer(file, stringer(vector(xsl, 0), vector(0, 0), e, True), O)
+
+    # トラス肉抜き
+    makeSannkakuNikunuki(
+        basePointNikunuki_U1[0],
+        basePointNikunuki_D1[0],
+        basePointNikunuki_D2[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U1[0],
+        basePointNikunuki_U2[0],
+        basePointNikunuki_D2[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U2[0],
+        basePointNIkunuki_D3[0],
+        basePointNikunuki_D2[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U2[0],
+        basePointNIkunuki_D3[0],
+        basePointNikunuki_U3[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U2[0],
+        basePointNIkunuki_D3[0],
+        basePointNikunuki_U3[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U3[0],
+        basePointNIkunuki_D3[0],
+        basePointNikunuki_D4[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U3[0],
+        basePointNikunuki_U4[0],
+        basePointNikunuki_D4[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_D5[0],
+        basePointNikunuki_U4[0],
+        basePointNikunuki_D4[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_D5[0],
+        basePointNikunuki_U4[0],
+        basePointNikunuki_U5[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikuniki_D7[0],
+        basePointNikuniki_D6[0],
+        basePointNikunuki_U6[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U6[0],
+        basePointNikuniki_D7[0],
+        basePointNikunuki_U7[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U7[0],
+        basePointNikuniki_D7[0],
+        basePointNikuniki_D8[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U7[0],
+        basePointNikuniki_D8[0],
+        basePointNikunuki_U8[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U8[0],
+        basePointNikuniki_D8[0],
+        basePointNikuniki_D9[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikuniki_D10[0],
+        basePointNikuniki_D9[0],
+        basePointNikunuki_U8[0],
+        0.50,
+        file,
+    )
+    makeSannkakuNikunuki(
+        basePointNikunuki_U8[0],
+        basePointNikuniki_D9[0],
+        basePointNikuniki_D10[0],
+        0.50,
+        file,
+    )
 
     # プランク、リブキャップ境目出力 切るので黒
     color(file, 0, 0, 0)
@@ -917,20 +1103,6 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     color(file, 0, 170, 0)
     line(file, hlineP1, hlineP2, O)
     line(file, vlineP1, vlineP2, O)
-    # 肉抜き
-    color(file, 0, 0, 0)
-    if use_half and k % 2 == 0 and k != n:
-        # 半リブ有で、偶数枚目で、端リブでない時
-        line(file, PlankPs[0], StringerDT.D, O)
-    else:  # 肉抜きする
-        for C in light_Cs:
-            WriteCircle(file, C, O, WriteCenter=True)
-    for i in range(3):
-        # 前縁はどちらにしろ出力する
-        WriteCircle(file, tri_lead_circles[i], O, WriteCenter=False)
-        WriteCircle(file, tri_trail_circles[i], O, WriteCenter=False)
-        line(file, tri_lead_lines[i - 1][0], tri_lead_lines[i - 1][1], O)
-        line(file, tri_trail_lines[i - 1][0], tri_trail_lines[i - 1][1], O)
     # 番号出力 切らないのでピンク
     color(file, 255, 0, 255)
     WriteText(
