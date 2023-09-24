@@ -739,7 +739,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     # 桁穴の出力 y座標は25%のcamber位置で固定
     delta = RootDelta + (EndDelta - RootDelta) * r
     RibAngle = math.atan(tan((alpha + delta) * numpy.pi / 180) * cos(sweep))
-    Pipe_C = vector(x_pipe, f_camber(x_25pc))
+    Pipe_C = vector(x_pipe, f_camber(x_pipe))
     Pipe = ellipse(
         Pipe_C, Pipe_C + vector(0, 1).rotate(RibAngle, "radian") * (d + dd) / 2, d / 2
     )

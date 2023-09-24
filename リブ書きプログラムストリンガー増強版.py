@@ -18,8 +18,8 @@ Directory = r"C:\Users\ryota2002\Documents\libu"
 
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
-RootChord = 1344
-EndChord = 1216
+RootChord = 1200
+EndChord = 1200
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 
@@ -47,9 +47,9 @@ e1 = 5.5
 # リブキャップ厚さ[mm]
 t = 1
 # 桁径[mm]	楕円の短軸方向
-d = 112
+d = 124
 # 桁径		楕円の長軸-短軸 円なら0
-dd = 112 - d
+dd = 124 - d
 # アセンブリ棒径[mm]
 da = 30  # 元は30
 # アセンブリ棒余白[mm]
@@ -637,7 +637,6 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     x_stringer_D3 = c * (stringerD3Rate / 100) * cos(sweep)
     x_stringer_dt = c * rsdt / 100 * cos(sweep)
     x_pipe = c * (RootR + (EndR - RootR) * r) / 100 * cos(sweep)
-    x_25pc = c * cos(sweep) * 0.25
 
     # プランクの点のリストの出力
     PlankPs = offset(
@@ -734,7 +733,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     # 桁穴の出力 y座標は25%のcamber位置で固定
     delta = RootDelta + (EndDelta - RootDelta) * r
     RibAngle = math.atan(tan((alpha + delta) * numpy.pi / 180) * cos(sweep))
-    Pipe_C = vector(x_pipe, f_camber(x_25pc))
+    Pipe_C = vector(x_pipe, f_camber(x_pipe))
     Pipe = ellipse(
         Pipe_C, Pipe_C + vector(0, 1).rotate(RibAngle, "radian") * (d + dd) / 2, d / 2
     )
