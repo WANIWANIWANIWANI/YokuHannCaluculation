@@ -810,23 +810,14 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             * tp
         )
     ###トラス肉抜きを行うための部分
-    # 肉抜きを行う際の変数を保持
-    # 桁穴とトラス肉抜き基準点の最も桁穴に近い点のx座標の距離を指定する（0.＠＠の形で表現）
-    rateOfNikunukiRestrictedForKetaanaMawari = 0
-    # 後縁の最終肉抜き基準点のｘ座標を入力する（0.＠＠の形で表現）
-    rateOfRestrictedForKouenn_U = 0.80
-    rateOfRestrictedForKouenn_D = 0.85
-
-    ##肉抜きを行うための基準点を求める
-    # 引数として渡した２点のx座標の中点がx座標となるような第三引数上の座標を返す関数
-    def findMidPointOfBasePoint(point1, point2, arrayOfSearched):
-        midPoint_x = (point1.x + point2.x) / 2
-        midPoint = [
-            arrayOfSearched[i]
-            for i in range(1, len(arrayOfSearched))
-            if arrayOfSearched[i - 1].x <= midPoint_x
-        ][-2:]
-        return midPoint
+    # 各基準点を保持する配列　設定の仕方は別紙参照
+    basePointArrayLists = [
+        [(0.05, 0.2), (0.07, 0.2)],
+        [(0.06028208195604628, -0.2), (0.1210706874657052, -0.2)],
+        [(0.09900552720062059, 0.2), (0.1883104680863334, 0.2)],
+        [(0.14457316392994055, -0.2), (0.22253229794910695, -0.2)],
+        [(0.18410474049963238, 0.2), (0.27823887625463106, 0.2)],
+    ]
 
     # arrayの形で渡された点の集まりから、第一引数のｘに最も近い座標を返すための関数
     def findNearestPointBasedOnX(x, arrayOfSearch):
@@ -836,192 +827,57 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             if arrayOfSearch[i - 1].x <= x
         ][-2:]
 
-    # 桁穴周りの４点
-    diffBetweeenPipeCRestrictedPoint_x = (
-        d / 2 + c * rateOfNikunukiRestrictedForKetaanaMawari
-    )
-    restricedForKEtaana_UX_Zennenn = x_pipe - diffBetweeenPipeCRestrictedPoint_x
-    restricedForKEtaana_UX_Kouenn = x_pipe + diffBetweeenPipeCRestrictedPoint_x
-    restricedForKEtaana_U_Zennenn = findNearestPointBasedOnX(
-        restricedForKEtaana_UX_Zennenn, PlankPsU
-    )
-    restrictedForKetana_D_Zennenn = findNearestPointBasedOnX(
-        restricedForKEtaana_UX_Zennenn, RibCap_dPs
-    )
+    # 翼弦のx座標の％、その翼の厚みに対しての移動％を渡された際に移動後のy座標を返す関数
+    def calucaulateYokuatuu(yokuGennRate_x, yokugennRate_y):
+        x = c * yokuGennRate_x
+        y_up = f_u(x)
+        y_down = f_d(x)
+        if yokugennRate_y < 0:
+            return (y_up - y_down) * yokugennRate_y + y_up
+        elif yokugennRate_y > 0:
+            return (y_up - y_down) * yokugennRate_y + y_down
 
-    restricedForKEtaana_U_Kouenn = findNearestPointBasedOnX(
-        restricedForKEtaana_UX_Kouenn, PlankPsU
-    )
-    restricedForKEtaana_D_Kouenn = findNearestPointBasedOnX(
-        restricedForKEtaana_UX_Kouenn, RibCap_dPs
-    )
+    # 正三角形を出力するための関数
+    def sannkakuNikunuki(basePointArray, angle):
+        # 各座標を計算する
+        basePoint1_x = c * basePointArray[0][0]
+        basePoint1_y = calucaulateYokuatuu(basePointArray[0][0], basePointArray[0][1])
+        basePoint2_x = c * basePointArray[1][0]
+        basePoint2_y = calucaulateYokuatuu(basePointArray[1][0], basePointArray[1][1])
+        basePointVector12 = vector(
+            basePoint2_x - basePoint1_x, basePoint2_y - basePoint1_y
+        )
+        basepointVector13 = basePointVector12.rotate(angle)
+        basePoint3Vector = basepointVector13 + vector(basePoint1_x, basePoint1_y)
+        basePoint3_x = basePoint3Vector.x
+        basePoint3_y = basePoint3Vector.y
+        # ここで各頂点同士を結ぶ
+        line(
+            file,
+            vector(basePoint1_x, basePoint1_y),
+            vector(basePoint2_x, basePoint2_y),
+            O,
+        )
+        line(
+            file,
+            vector(basePoint2_x, basePoint2_y),
+            vector(basePoint3_x, basePoint3_y),
+            O,
+        )
+        line(
+            file,
+            vector(basePoint3_x, basePoint3_y),
+            vector(basePoint1_x, basePoint1_y),
+            O,
+        )
 
-    # 後縁材周りについて
-    restrictedForKouennMawari_Ux = c * rateOfRestrictedForKouenn_U
-    restrictedForKouennMawari_Dx = c * rateOfRestrictedForKouenn_D
-
-    restrictedForKouennMawari_U = findNearestPointBasedOnX(
-        restrictedForKouennMawari_Ux, RibCap_uPs
-    )
-    restrictedForKouennMawari_D = findNearestPointBasedOnX(
-        restrictedForKouennMawari_Dx, RibCap_dPs
-    )
-
-    # 別途説明図のような肉抜き基準点を求める
-    basePointNikunuki_U1 = stringerU1
-    basePointNikunuki_U2 = findMidPointOfBasePoint(
-        stringerU1[0], stringerU2[0], PlankPsU
-    )
-    basePointNikunuki_U3 = stringerU2
-    basePointNikunuki_U4 = findMidPointOfBasePoint(
-        stringerU2[0], restricedForKEtaana_U_Zennenn[0], PlankPsU
-    )
-    basePointNikunuki_U5 = restricedForKEtaana_U_Zennenn
-    basePointNikunuki_U6 = restricedForKEtaana_U_Kouenn
-    basePointNikunuki_U7 = findMidPointOfBasePoint(
-        restricedForKEtaana_U_Kouenn[0], stringerU3[0], PlankPsU
-    )
-    basePointNikunuki_U8 = stringerU3
-    basePointNikunuki_U9 = findMidPointOfBasePoint(
-        RibCap_uPs[0], restrictedForKouennMawari_U[0], RibCap_uPs
-    )
-    basePointNIkunuki_U10 = restrictedForKouennMawari_U
-
-    basePointNikunuki_D1 = stringerD1
-    basePointNikunuki_D2 = stringerD2
-    basePointNIkunuki_D3 = findMidPointOfBasePoint(
-        stringerD2[0], stringerD3[0], PlankPsD
-    )
-    basePointNikunuki_D4 = stringerD3
-    basePointNikunuki_D5 = restrictedForKetana_D_Zennenn
-    basePointNikuniki_D6 = restricedForKEtaana_D_Kouenn
-    basePointNikuniki_D7 = stringerDT_vec
-    basePointNikuniki_D9 = findMidPointOfBasePoint(
-        stringerDT_vec[0], restrictedForKouennMawari_D[0], RibCap_dPs
-    )
-    basePointNikuniki_D8 = findMidPointOfBasePoint(
-        stringerDT_vec[0], basePointNikuniki_D9[0], RibCap_dPs
-    )
-    basePointNikuniki_D10 = findMidPointOfBasePoint(
-        basePointNikuniki_D9[0], restrictedForKouennMawari_D[0], RibCap_dPs
-    )
-    basePointNikuniki_D11 = restrictedForKouennMawari_D[0]
-
-    ##肉抜きの形を計算するための関数
-    # 2点を指定することで直線の方程式を返す関数（y=mx+nが{m:,n:}の形式で帰って来る）
-    def makeLiearEquation(x1, x2, y1, y2):
-        line = {}
-        if y1 == y2:
-            line["y"] = y1
-        elif x1 == x2:
-            line["x"] = x1
-        else:
-            line["m"] = (y1 - y2) / (x1 - x2)
-            line["n"] = y1 - (line["m"] * x1)
-        return line
-
-    # 距離xだけ離れた平行な直線の方程式を求める　第一引数へlineオブジェクト、第二引数へ直線の距離を渡す
-    # 第三引数へ直線に対してどちら側へずらすかを"upr"or"down"で指定する
-    def makeLinearPararellEquation(line, x, status):
-        returnLine = {}
-        returnLine["m"] = line["m"]
-        if status == "up":
-            returnLine["n"] = line["n"] + line["m"] * x * ((2) ** (1 / 2))
-        elif status == "down":
-            returnLine["n"] = line["n"] - line["m"] * x * ((2) ** (1 / 2))
-        return returnLine
-
-    # 2直線の交点を求めるための関数
-    # 2つの線分のlineオブジェクトをこの関数に渡すと交点の座標が{x:,y:}でかえってくる
-    def findCrossPoint(line1, line2):
-        x = sympy.Symbol("x")
-        y = sympy.Symbol("y")
-        equation1 = line1["m"] * x - y + line1["n"]
-        equation2 = line2["m"] * x - y + line2["n"]
-
-        list(sympy.solve([equation1, equation2], [x, y]).values())
-        return list(sympy.solve([equation1, equation2], [x, y]).values())
-
-    # 肉抜きを行う関数(翼の下面に辺がある三角形前縁)
-    # 引数は、第一引数へfile,第二～第四引数は、vecオブジェクトである制御点,第5引数は外周の幅(mm),第六引数にはトラスの柱の幅(mm)
-    def makeSannkakuNikunukiDownZennenn(
-        file, base1, base2, base3, rateForGaishuu, rateForTorasuNikunuki
-    ):
-        line12 = makeLiearEquation(base1.x, base2.x, base1.y, base2.y)
-        line13 = makeLiearEquation(base1.x, base3.x, base1.y, base3.y)
-        line23 = makeLiearEquation(base2.x, base3.x, base2.y, base3.y)
-        linaA = makeLinearPararellEquation(line12, rateForTorasuNikunuki, "down")
-        lineB = makeLinearPararellEquation(line13, rateForTorasuNikunuki, "up")
-        lineC = makeLinearPararellEquation(line23, rateForGaishuu, "up")
-        point1 = findCrossPoint(linaA, lineC)
-        point2 = findCrossPoint(lineC, lineB)
-        point3 = findCrossPoint(lineB, linaA)
-        point1ToVec = vector(point1[0], point1[1])
-        point2ToVec = vector(point2[0], point2[1])
-        point3ToVec = vector(point3[0], point3[1])
-        line(file, point1ToVec, point2ToVec, O)
-        line(file, point2ToVec, point3ToVec, O)
-        line(file, point3ToVec, point1ToVec, O)
-
-    # 肉抜きを行う関数(翼の上面に辺がある三角形前縁)
-    def makeSannkakuNikunukiUpZennenn(
-        file, base1, base2, base3, rateForGaishuu, rateForTorasuNikunuki
-    ):
-        line12 = makeLiearEquation(base1.x, base2.x, base1.y, base2.y)
-        line13 = makeLiearEquation(base1.x, base3.x, base1.y, base3.y)
-        line23 = makeLiearEquation(base2.x, base3.x, base2.y, base3.y)
-        linaA = makeLinearPararellEquation(line12, rateForTorasuNikunuki, "up")
-        lineB = makeLinearPararellEquation(line13, rateForTorasuNikunuki, "down")
-        lineC = makeLinearPararellEquation(line23, rateForGaishuu, "down")
-        point1 = findCrossPoint(linaA, lineC)
-        point2 = findCrossPoint(lineC, lineB)
-        point3 = findCrossPoint(lineB, linaA)
-        point1ToVec = vector(point1[0], point1[1])
-        point2ToVec = vector(point2[0], point2[1])
-        point3ToVec = vector(point3[0], point3[1])
-        line(file, point1ToVec, point2ToVec, O)
-        line(file, point2ToVec, point3ToVec, O)
-        line(file, point3ToVec, point1ToVec, O)
-
-    # 肉抜きを行う関数(翼の上面に辺がある三角形後縁)
-    def makeSannkakuNikunukiUpKouenn(
-        file, base1, base2, base3, rateForGaishuu, rateForTorasuNikunuki
-    ):
-        line12 = makeLiearEquation(base1.x, base2.x, base1.y, base2.y)
-        line13 = makeLiearEquation(base1.x, base3.x, base1.y, base3.y)
-        line23 = makeLiearEquation(base2.x, base3.x, base2.y, base3.y)
-        linaA = makeLinearPararellEquation(line12, rateForTorasuNikunuki, "down")
-        lineB = makeLinearPararellEquation(line13, rateForTorasuNikunuki, "up")
-        lineC = makeLinearPararellEquation(line23, rateForGaishuu, "up")
-        point1 = findCrossPoint(linaA, lineC)
-        point2 = findCrossPoint(lineC, lineB)
-        point3 = findCrossPoint(lineB, linaA)
-        point1ToVec = vector(point1[0], point1[1])
-        point2ToVec = vector(point2[0], point2[1])
-        point3ToVec = vector(point3[0], point3[1])
-        line(file, point1ToVec, point2ToVec, O)
-        line(file, point2ToVec, point3ToVec, O)
-        line(file, point3ToVec, point1ToVec, O)
-
-    # 肉抜きを行う関数(翼の上面に辺がある三角形後縁)
-    def makeSannkakuNikunukiDownKouenn(
-        file, base1, base2, base3, rateForGaishuu, rateForTorasuNikunuki
-    ):
-        line12 = makeLiearEquation(base1.x, base2.x, base1.y, base2.y)
-        line13 = makeLiearEquation(base1.x, base3.x, base1.y, base3.y)
-        line23 = makeLiearEquation(base2.x, base3.x, base2.y, base3.y)
-        linaA = makeLinearPararellEquation(line12, rateForTorasuNikunuki, "down")
-        lineB = makeLinearPararellEquation(line13, rateForTorasuNikunuki, "up")
-        lineC = makeLinearPararellEquation(line23, rateForGaishuu, "up")
-        point1 = findCrossPoint(linaA, lineC)
-        point2 = findCrossPoint(lineC, lineB)
-        point3 = findCrossPoint(lineB, linaA)
-        point1ToVec = vector(point1[0], point1[1])
-        point2ToVec = vector(point2[0], point2[1])
-        point3ToVec = vector(point3[0], point3[1])
-        line(file, point1ToVec, point2ToVec, O)
-        line(file, point2ToVec, point3ToVec, O)
-        line(file, point3ToVec, point1ToVec, O)
+    for basePointArray in basePointArrayLists:
+        print(basePointArrayLists)
+        print(basePointArray)
+        if basePointArray[0][1] > 0:
+            sannkakuNikunuki(basePointArray, 60)
+        elif basePointArray[0][1] <= 0:
+            sannkakuNikunuki(basePointArray, -60)
 
     # 現在のリブの図面を出力 要精度-黒 作成時に使う線-青 補助線-ピンク
     # # 翼型 切らないのでピンク
@@ -1079,112 +935,14 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     line(file, vlineP1, vlineP2, O)
 
     # トラス肉抜きを出力(前縁)
-    makeSannkakuNikunukiDownZennenn(
-        file,
-        basePointNikunuki_U2[0],
-        basePointNikunuki_D2[0],
-        basePointNIkunuki_D3[0],
-        170,
-        5,
-    ),
-    makeSannkakuNikunukiUpZennenn(
-        file,
-        basePointNIkunuki_D3[0],
-        basePointNikunuki_U3[0],
-        basePointNikunuki_U2[0],
-        30,
-        5,
-    ),
-    makeSannkakuNikunukiDownZennenn(
-        file,
-        basePointNikunuki_U3[0],
-        basePointNIkunuki_D3[0],
-        basePointNikunuki_D4[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiUpZennenn(
-        file,
-        basePointNikunuki_D4[0],
-        basePointNikunuki_U4[0],
-        basePointNikunuki_U3[0],
-        50,
-        5,
-    ),
-    makeSannkakuNikunukiDownZennenn(
-        file,
-        basePointNikunuki_U4[0],
-        basePointNikunuki_D4[0],
-        basePointNikunuki_D5[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiUpZennenn(
-        file,
-        basePointNikunuki_D5[0],
-        basePointNikunuki_U5[0],
-        basePointNikunuki_U4[0],
-        90,
-        5,
-    ),
-
-    # ここから後縁肉抜きの記述
-    makeSannkakuNikunukiUpKouenn(
-        file,
-        basePointNikunuki_U6[0],
-        basePointNikuniki_D6[0],
-        basePointNikuniki_D7[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiDownKouenn(
-        file,
-        basePointNikuniki_D7[0],
-        basePointNikunuki_U6[0],
-        basePointNikunuki_U7[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiUpKouenn(
-        file,
-        basePointNikunuki_U7[0],
-        basePointNikuniki_D7[0],
-        basePointNikuniki_D8[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiDownKouenn(
-        file,
-        basePointNikuniki_D8[0],
-        basePointNikunuki_U7[0],
-        basePointNikunuki_U8[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiUpKouenn(
-        file,
-        basePointNikunuki_U8[0],
-        basePointNikuniki_D8[0],
-        basePointNikuniki_D9[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiDownKouenn(
-        file,
-        basePointNikuniki_D9[0],
-        basePointNikunuki_U8[0],
-        basePointNikunuki_U9[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiDownKouenn(
-        file,
-        basePointNikunuki_U9[0],
-        basePointNikuniki_D9[0],
-        basePointNikuniki_D10[0],
-        120,
-        5,
-    ),
+    # makeSannkakuNikunukiDownZennenn(
+    #     file,
+    #     basePointNikunuki_U1[0],
+    #     basePointNikunuki_D1[0],
+    #     basePointNikunuki_D2[0],
+    #     120,
+    #     5,
+    # ),
     print(k)
 
     # # ここから後縁肉抜きへ

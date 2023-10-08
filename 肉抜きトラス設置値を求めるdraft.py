@@ -112,6 +112,7 @@ import numpy
 import scipy.interpolate as interp
 import scipy.optimize as optimize
 import sympy
+import random
 
 inter = interp.Akima1DInterpolator
 import math
@@ -259,45 +260,6 @@ class ellipse:
         self.b = b
 
 
-def spline(file, l, O=vector(0, 0)):
-    """
-    リストl=[vector,vector,...]のspline曲線を描くコマンドをfileに出力
-    Oに原点を移して描ける
-    """
-    file.write("spline\nm\nf\nk\nc\n")  # spline設定
-    for P in l:
-        file.write("{},{}\n".format(P.x + O.x, P.y + O.y))
-    file.write("\n")
-
-
-def line(file, P1, P2, O=vector(0, 0)):
-    """
-    点P1,P2(vector)を結ぶ線分を描くコマンドをfileに出力
-    """
-    file.write(f"line\n{P1.x+O.x},{P1.y+O.y}\n{P2.x+O.x},{P2.y+O.y}\n\n")
-
-
-def WriteEllipse(file, ell, O=vector(0, 0)):
-    file.write(
-        f"ellipse\nc\n{ell.C.x+O.x},{ell.C.y+O.y}\n{ell.P.x+O.x},{ell.P.y+O.y}\n{ell.b}\n"
-    )
-
-
-def WriteCircle(file, circle, O=vector(0, 0), WriteCenter=True):
-    """circleオブジェクトを出力するコマンドを出力"""
-    file.write(
-        """circle
-{xc},{yc}
-{r}
-""".format(
-            xc=circle.O.x + O.x, yc=circle.O.y + O.y, r=circle.r
-        )
-    )
-    if WriteCenter:
-        line(file, circle.O + vector(0, 5), circle.O + vector(0, -5), O)
-        line(file, circle.O + vector(5, 0), circle.O + vector(-5, 0), O)
-
-
 def div_P(P1, P2, known, index):
     """
     P1,P2を結ぶ直線上にP3があってP3.index=knownがわかっているとき、その点をvectorとして返す。
@@ -314,32 +276,6 @@ def div_P2(P1, P2, ratio):
     P1,P2をP1P2:P1P3=1:ratioに内分、外分する点P3の座標をvectorとして返す。
     """
     return P1 + (P2 - P1) * ratio
-
-
-def WriteStringer(file, stringer, O=vector(0, 0)):
-    """上のstringerを入力にしてこれを描くコマンドを出力"""
-    extentionLineVector_onDA = (stringer.A - stringer.D) * 1.20 + stringer.D
-    extentionLineVector_onCB = (stringer.B - stringer.C) * 1.20 + stringer.C
-    line(file, stringer.D, extentionLineVector_onDA, O)
-    line(file, stringer.C, extentionLineVector_onCB, O)
-    file.write(
-        """line
-{ax},{ay}
-{dx},{dy}
-{cx},{cy}
-{bx},{by}
-
-""".format(
-            ax=stringer.A.x + O.x,
-            ay=stringer.A.y + O.y,
-            bx=stringer.B.x + O.x,
-            by=stringer.B.y + O.y,
-            cx=stringer.C.x + O.x,
-            cy=stringer.C.y + O.y,
-            dx=stringer.D.x + O.x,
-            dy=stringer.D.y + O.y,
-        )
-    )
 
 
 def offset(l, t, updown, end=0):
@@ -364,13 +300,6 @@ def offset(l, t, updown, end=0):
             + [(l[-1] - l[-2]).i / abs(l[-1] - l[-2]) * t * (-1) ** updown + l[-1]]
         )
     return ret
-
-
-def color(file, r, g, b):
-    """
-    r,g,bで次から出力するオブジェクトの色を変えるコマンドをfileに出力
-    """
-    file.write(f"-color\nt\n{r},{g},{b}\n")
 
 
 def to_vectors(array):
@@ -418,10 +347,10 @@ def relation(Ps, r, O):
         if abs(O - P) > r:  # OP > rならPは円の外
             pass
         elif O.y > P.y:  # 円の中で、下のほうがかぶっているとき
-            print("距離が" + str(abs(O - P)))
+            # print("距離が" + str(abs(O - P)))
             return "Downside"
         else:
-            print("距離が" + str(abs(O - P)))
+            # print("距離が" + str(abs(O - P)))
             return "Upside"
     return "Separated"
 
@@ -482,14 +411,6 @@ def define_Oa(
         ):  # ret[0]がRootでも中に入っていたら
             return ret[0]
     return ret[1]
-
-
-def WriteText(file, O, text, height=20, angle=0):
-    """
-    fileにtextを入力するコマンドを出力
-    Oから始める。フォントの高さはheight、angleは字の角度[°]
-    """
-    file.write(f"text\n{O.x},{O.y}\n{str(height)}\n{str(angle)}\n{text}\n\n")
 
 
 # 関数、クラス定義おわり
@@ -664,75 +585,6 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     StringerDL = stringer(
         div_P(PlankPs[-1], PlankPs[-2], x_plank_d, 0), PlankPs[-2], e, R=True
     )  # leading edge
-    EdgeDT = [
-        RibCap_dPs[i]
-        for i in range(1, len(RibCap_dPs))
-        if RibCap_dPs[i - 1].x <= x_stringer_dt
-    ][
-        -2:
-    ]  # StringerDT.Aを挟む点
-    StringerDT = stringer(
-        div_P(EdgeDT[0], EdgeDT[1], x_stringer_dt, 0), EdgeDT[0], e, R=True
-    )  # trailing edge
-
-    stringerDT_vec = [
-        RibCap_dPs[i]
-        for i in range(1, len(RibCap_dPs))
-        if RibCap_dPs[i - 1].x <= x_stringer_dt
-    ][-2:]
-    stringerU1 = [
-        PlankPsU[i]
-        for i in range(1, len(PlankPsU))
-        if PlankPsU[i - 1].x <= x_stringer_u1
-    ][-2:]
-    stringerU1ToVec = stringer(
-        div_P(stringerU1[0], stringerU1[1], x_stringer_u1, 0), stringerU1[0], e
-    )
-
-    stringerU2 = [
-        PlankPsU[i]
-        for i in range(1, len(PlankPsU))
-        if PlankPsU[i - 1].x <= x_stringer_u2
-    ][-2:]
-    stringerU2ToVec = stringer(
-        div_P(stringerU2[0], stringerU2[1], x_stringer_u2, 0), stringerU2[0], e
-    )
-
-    stringerU3 = [
-        PlankPsU[i]
-        for i in range(1, len(PlankPsU))
-        if PlankPsU[i - 1].x <= x_stringer_u3
-    ][-2:]
-    stringerU3ToVec = stringer(
-        div_P(stringerU3[0], stringerU3[1], x_stringer_u3, 0), stringerU3[0], e
-    )
-
-    stringerD1 = [
-        PlankPsD[i]
-        for i in range(1, len(PlankPsD))
-        if PlankPsD[i - 1].x <= x_stringer_D1
-    ][-2:]
-    stringerD1ToVec = stringer(
-        div_P(stringerD1[0], stringerD1[1], x_stringer_D1, 0), stringerD1[0], e, R=True
-    )
-
-    stringerD2 = [
-        PlankPsD[i]
-        for i in range(1, len(PlankPsD))
-        if PlankPsD[i - 1].x <= x_stringer_D2
-    ][-2:]
-    stringerD2ToVec = stringer(
-        div_P(stringerD2[0], stringerD2[1], x_stringer_D2, 0), stringerD2[0], e, R=True
-    )
-
-    stringerD3 = [
-        PlankPsD[i]
-        for i in range(1, len(PlankPsD))
-        if PlankPsD[i - 1].x <= x_stringer_D3
-    ][-2:]
-    stringerD3ToVec = stringer(
-        div_P(stringerD3[0], stringerD3[1], x_stringer_D3, 0), stringerD3[0], e, R=True
-    )
 
     # プランク線pipe.bの端を切り取る
     del PlankPs[0], PlankPs[-1]
@@ -810,23 +662,13 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             * tp
         )
     ###トラス肉抜きを行うための部分
-    # 肉抜きを行う際の変数を保持
-    # 桁穴とトラス肉抜き基準点の最も桁穴に近い点のx座標の距離を指定する（0.＠＠の形で表現）
-    rateOfNikunukiRestrictedForKetaanaMawari = 0
-    # 後縁の最終肉抜き基準点のｘ座標を入力する（0.＠＠の形で表現）
-    rateOfRestrictedForKouenn_U = 0.80
-    rateOfRestrictedForKouenn_D = 0.85
+    # 出力したいトラスの外周厚み
+    gaishuuAtumi = 0.20
+    # 出力したいトラスの斜材厚み
+    torasuuAtumi = 5
 
-    ##肉抜きを行うための基準点を求める
-    # 引数として渡した２点のx座標の中点がx座標となるような第三引数上の座標を返す関数
-    def findMidPointOfBasePoint(point1, point2, arrayOfSearched):
-        midPoint_x = (point1.x + point2.x) / 2
-        midPoint = [
-            arrayOfSearched[i]
-            for i in range(1, len(arrayOfSearched))
-            if arrayOfSearched[i - 1].x <= midPoint_x
-        ][-2:]
-        return midPoint
+    # 各基準点を保持する配列
+    basePointArrayLists_fixed = [[(0.05, 0.20), (0.10, 0.20)]]
 
     # arrayの形で渡された点の集まりから、第一引数のｘに最も近い座標を返すための関数
     def findNearestPointBasedOnX(x, arrayOfSearch):
@@ -836,426 +678,145 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             if arrayOfSearch[i - 1].x <= x
         ][-2:]
 
-    # 桁穴周りの４点
-    diffBetweeenPipeCRestrictedPoint_x = (
-        d / 2 + c * rateOfNikunukiRestrictedForKetaanaMawari
-    )
-    restricedForKEtaana_UX_Zennenn = x_pipe - diffBetweeenPipeCRestrictedPoint_x
-    restricedForKEtaana_UX_Kouenn = x_pipe + diffBetweeenPipeCRestrictedPoint_x
-    restricedForKEtaana_U_Zennenn = findNearestPointBasedOnX(
-        restricedForKEtaana_UX_Zennenn, PlankPsU
-    )
-    restrictedForKetana_D_Zennenn = findNearestPointBasedOnX(
-        restricedForKEtaana_UX_Zennenn, RibCap_dPs
-    )
+    # 翼弦のx座標の％、その翼の厚みに対しての移動％を渡された際に移動後のy座標を返す関数
+    def calucaulateYokuactuu(yokuGennRate_x, yokugennRate_y):
+        x = c * yokuGennRate_x
+        y_up = f_u(x)
+        y_down = f_d(x)
+        if yokugennRate_y < 0:
+            return (y_up - y_down) * yokugennRate_y + y_up
+        elif yokugennRate_y > 0:
+            return (y_up - y_down) * yokugennRate_y + y_down
 
-    restricedForKEtaana_U_Kouenn = findNearestPointBasedOnX(
-        restricedForKEtaana_UX_Kouenn, PlankPsU
-    )
-    restricedForKEtaana_D_Kouenn = findNearestPointBasedOnX(
-        restricedForKEtaana_UX_Kouenn, RibCap_dPs
-    )
+    # 翼弦のx座標の％に対応する翼の厚みを返す関数
+    def calucaulateYokuaAtumi(yokuGennRate_x):
+        x = yokuGennRate_x
+        y_up = f_u(x)
+        y_down = f_d(x)
+        return y_up - y_down
 
-    # 後縁材周りについて
-    restrictedForKouennMawari_Ux = c * rateOfRestrictedForKouenn_U
-    restrictedForKouennMawari_Dx = c * rateOfRestrictedForKouenn_D
-
-    restrictedForKouennMawari_U = findNearestPointBasedOnX(
-        restrictedForKouennMawari_Ux, RibCap_uPs
-    )
-    restrictedForKouennMawari_D = findNearestPointBasedOnX(
-        restrictedForKouennMawari_Dx, RibCap_dPs
-    )
-
-    # 別途説明図のような肉抜き基準点を求める
-    basePointNikunuki_U1 = stringerU1
-    basePointNikunuki_U2 = findMidPointOfBasePoint(
-        stringerU1[0], stringerU2[0], PlankPsU
-    )
-    basePointNikunuki_U3 = stringerU2
-    basePointNikunuki_U4 = findMidPointOfBasePoint(
-        stringerU2[0], restricedForKEtaana_U_Zennenn[0], PlankPsU
-    )
-    basePointNikunuki_U5 = restricedForKEtaana_U_Zennenn
-    basePointNikunuki_U6 = restricedForKEtaana_U_Kouenn
-    basePointNikunuki_U7 = findMidPointOfBasePoint(
-        restricedForKEtaana_U_Kouenn[0], stringerU3[0], PlankPsU
-    )
-    basePointNikunuki_U8 = stringerU3
-    basePointNikunuki_U9 = findMidPointOfBasePoint(
-        RibCap_uPs[0], restrictedForKouennMawari_U[0], RibCap_uPs
-    )
-    basePointNIkunuki_U10 = restrictedForKouennMawari_U
-
-    basePointNikunuki_D1 = stringerD1
-    basePointNikunuki_D2 = stringerD2
-    basePointNIkunuki_D3 = findMidPointOfBasePoint(
-        stringerD2[0], stringerD3[0], PlankPsD
-    )
-    basePointNikunuki_D4 = stringerD3
-    basePointNikunuki_D5 = restrictedForKetana_D_Zennenn
-    basePointNikuniki_D6 = restricedForKEtaana_D_Kouenn
-    basePointNikuniki_D7 = stringerDT_vec
-    basePointNikuniki_D9 = findMidPointOfBasePoint(
-        stringerDT_vec[0], restrictedForKouennMawari_D[0], RibCap_dPs
-    )
-    basePointNikuniki_D8 = findMidPointOfBasePoint(
-        stringerDT_vec[0], basePointNikuniki_D9[0], RibCap_dPs
-    )
-    basePointNikuniki_D10 = findMidPointOfBasePoint(
-        basePointNikuniki_D9[0], restrictedForKouennMawari_D[0], RibCap_dPs
-    )
-    basePointNikuniki_D11 = restrictedForKouennMawari_D[0]
-
-    ##肉抜きの形を計算するための関数
-    # 2点を指定することで直線の方程式を返す関数（y=mx+nが{m:,n:}の形式で帰って来る）
-    def makeLiearEquation(x1, x2, y1, y2):
+    # 2点を決めることで直線の方程式を返すような関数
+    def makeLinearEquation(x1, y1, x2, y2):
         line = {}
-        if y1 == y2:
-            line["y"] = y1
-        elif x1 == x2:
-            line["x"] = x1
-        else:
-            line["m"] = (y1 - y2) / (x1 - x2)
-            line["n"] = y1 - (line["m"] * x1)
+        # y = mx + n
+        line["m"] = (y1 - y2) / (x1 - x2)
+        line["n"] = y1 - (line["m"] * x1)
         return line
 
-    # 距離xだけ離れた平行な直線の方程式を求める　第一引数へlineオブジェクト、第二引数へ直線の距離を渡す
-    # 第三引数へ直線に対してどちら側へずらすかを"upr"or"down"で指定する
-    def makeLinearPararellEquation(line, x, status):
-        returnLine = {}
-        returnLine["m"] = line["m"]
-        if status == "up":
-            returnLine["n"] = line["n"] + line["m"] * x * ((2) ** (1 / 2))
-        elif status == "down":
-            returnLine["n"] = line["n"] - line["m"] * x * ((2) ** (1 / 2))
-        return returnLine
+    # 点と直線の距離
+    def Calc_distance(a, b, c, point_x, point_y):  # 直線ax+by+c=0 点(x0,y0)
+        numer = abs(a * point_x + b * point_y + c)  # 分子
+        denom = math.sqrt(pow(a, 2) + pow(b, 2))  # 分母
+        return numer / denom  # 計算結果
 
-    # 2直線の交点を求めるための関数
-    # 2つの線分のlineオブジェクトをこの関数に渡すと交点の座標が{x:,y:}でかえってくる
-    def findCrossPoint(line1, line2):
-        x = sympy.Symbol("x")
-        y = sympy.Symbol("y")
-        equation1 = line1["m"] * x - y + line1["n"]
-        equation2 = line2["m"] * x - y + line2["n"]
+    # 翼の外周の厚みを返す関数
+    def sannkakuNikunuki(basePointArrayInput, angle):
+        # basePointArrayに含まれるトラス情報を並び帰る
+        if basePointArrayInput[0][0] > basePointArrayInput[1][0]:
+            basePointArray = [
+                (basePointArrayInput[1][0], basePointArrayInput[1][1]),
+                (basePointArrayInput[0][0], basePointArrayInput[0][1]),
+            ]
+        else:
+            basePointArray = basePointArrayInput
+        # 各座標を計算する
+        basePoint1_x = c * basePointArray[0][0]
+        basePoint1_y = calucaulateYokuactuu(basePointArray[0][0], basePointArray[0][1])
+        basePoint2_x = c * basePointArray[1][0]
+        basePoint2_y = calucaulateYokuactuu(basePointArray[1][0], basePointArray[1][1])
+        basePointVector12 = vector(
+            basePoint2_x - basePoint1_x, basePoint2_y - basePoint1_y
+        )
+        basepointVector13 = basePointVector12.rotate(angle)
+        basePoint3Vector = basepointVector13 + vector(basePoint1_x, basePoint1_y)
+        basePoint3_x = basePoint3Vector.x
+        basePoint3_y = basePoint3Vector.y
+        # base3,base2を結ぶ直線の方程式を求める
+        line23 = makeLinearEquation(
+            basePoint2_x, basePoint2_y, basePoint3_x, basePoint3_y
+        )
+        # トラスの外周幅を計算
+        gaishuugosa = 0
+        if basePointArray[0][1] > 0:
+            diff = basePoint3_y - f_u(basePoint3_x)
+            gaishuugosa = abs(diff / calucaulateYokuaAtumi(basePoint3_x))
+        elif basePointArray[0][1] <= 0:
+            diff = f_d(basePoint3_x) - basePoint3_y
+            gaishuugosa = abs(diff / calucaulateYokuaAtumi(basePoint3_x))
+        # 翼のトラス斜め材の太さを計算
+        # 1つ前の三角形の点を利用して計算を進める
+        torasuBefore_x = basePointArrayLists_fixed[::-1][0][1][0] * c
+        torasuBefore_y = calucaulateYokuactuu(
+            basePointArrayLists_fixed[::-1][0][1][0],
+            basePointArrayLists_fixed[::-1][0][1][1],
+        )
+        lengthOfTorasu = Calc_distance(
+            line23["m"], -1, line23["n"], torasuBefore_x, torasuBefore_y
+        )
+        torasuuNanamezaiGosa = abs(lengthOfTorasu - torasuuAtumi)
+        ##設定値からのずれを評価
+        gosa = abs(gaishuugosa + torasuuNanamezaiGosa)
+        if gosa < minimumGosa:
+            return [True, gosa, basePointArray]
+        else:
+            return [False]
 
-        list(sympy.solve([equation1, equation2], [x, y]).values())
-        return list(sympy.solve([equation1, equation2], [x, y]).values())
+    timesOfKaiseki = 100000
+    # ここからトラス構造の探索が行われる
+    saerchPointArrayLists = []
+    counter = 0
+    # これまでの最小となる誤差を入力
+    minimumGosa = float("inf")
+    minimumBasePointarray = []
+    while counter < timesOfKaiseki:
+        counter += 1
+        saerchPointArrayLists.append(
+            [(random.random(), gaishuuAtumi), (random.random(), gaishuuAtumi)]
+        )
+    for basePointArray in saerchPointArrayLists:
+        if basePointArray[0][1] > 0:
+            calucurateGosa = sannkakuNikunuki(basePointArray, 60)
+            if calucurateGosa[0] == True:
+                minimumGosa = calucurateGosa[1]
+                minimumBasePointarray = calucurateGosa[2]
 
-    # 肉抜きを行う関数(翼の下面に辺がある三角形前縁)
-    # 引数は、第一引数へfile,第二～第四引数は、vecオブジェクトである制御点,第5引数は外周の幅(mm),第六引数にはトラスの柱の幅(mm)
-    def makeSannkakuNikunukiDownZennenn(
-        file, base1, base2, base3, rateForGaishuu, rateForTorasuNikunuki
-    ):
-        line12 = makeLiearEquation(base1.x, base2.x, base1.y, base2.y)
-        line13 = makeLiearEquation(base1.x, base3.x, base1.y, base3.y)
-        line23 = makeLiearEquation(base2.x, base3.x, base2.y, base3.y)
-        linaA = makeLinearPararellEquation(line12, rateForTorasuNikunuki, "down")
-        lineB = makeLinearPararellEquation(line13, rateForTorasuNikunuki, "up")
-        lineC = makeLinearPararellEquation(line23, rateForGaishuu, "up")
-        point1 = findCrossPoint(linaA, lineC)
-        point2 = findCrossPoint(lineC, lineB)
-        point3 = findCrossPoint(lineB, linaA)
-        point1ToVec = vector(point1[0], point1[1])
-        point2ToVec = vector(point2[0], point2[1])
-        point3ToVec = vector(point3[0], point3[1])
-        line(file, point1ToVec, point2ToVec, O)
-        line(file, point2ToVec, point3ToVec, O)
-        line(file, point3ToVec, point1ToVec, O)
+        elif basePointArray[0][1] <= 0:
+            calucurateGosa = sannkakuNikunuki(basePointArray, -60)
+            if calucurateGosa[0] == True:
+                minimumGosa = calucurateGosa[1]
+                minimumBasePointarray = calucurateGosa[2]
+    basePointArrayLists_fixed.append(minimumBasePointarray)
+    print(basePointArrayLists_fixed, "findAnswer")
 
-    # 肉抜きを行う関数(翼の上面に辺がある三角形前縁)
-    def makeSannkakuNikunukiUpZennenn(
-        file, base1, base2, base3, rateForGaishuu, rateForTorasuNikunuki
-    ):
-        line12 = makeLiearEquation(base1.x, base2.x, base1.y, base2.y)
-        line13 = makeLiearEquation(base1.x, base3.x, base1.y, base3.y)
-        line23 = makeLiearEquation(base2.x, base3.x, base2.y, base3.y)
-        linaA = makeLinearPararellEquation(line12, rateForTorasuNikunuki, "up")
-        lineB = makeLinearPararellEquation(line13, rateForTorasuNikunuki, "down")
-        lineC = makeLinearPararellEquation(line23, rateForGaishuu, "down")
-        point1 = findCrossPoint(linaA, lineC)
-        point2 = findCrossPoint(lineC, lineB)
-        point3 = findCrossPoint(lineB, linaA)
-        point1ToVec = vector(point1[0], point1[1])
-        point2ToVec = vector(point2[0], point2[1])
-        point3ToVec = vector(point3[0], point3[1])
-        line(file, point1ToVec, point2ToVec, O)
-        line(file, point2ToVec, point3ToVec, O)
-        line(file, point3ToVec, point1ToVec, O)
+    ##各トラス座標に対して配置の最適化を行うロジックは完成
+    ##ここから、複数個数のトラス位置を計算するためのロジックを作るを作る
 
-    # 肉抜きを行う関数(翼の上面に辺がある三角形後縁)
-    def makeSannkakuNikunukiUpKouenn(
-        file, base1, base2, base3, rateForGaishuu, rateForTorasuNikunuki
-    ):
-        line12 = makeLiearEquation(base1.x, base2.x, base1.y, base2.y)
-        line13 = makeLiearEquation(base1.x, base3.x, base1.y, base3.y)
-        line23 = makeLiearEquation(base2.x, base3.x, base2.y, base3.y)
-        linaA = makeLinearPararellEquation(line12, rateForTorasuNikunuki, "down")
-        lineB = makeLinearPararellEquation(line13, rateForTorasuNikunuki, "up")
-        lineC = makeLinearPararellEquation(line23, rateForGaishuu, "up")
-        point1 = findCrossPoint(linaA, lineC)
-        point2 = findCrossPoint(lineC, lineB)
-        point3 = findCrossPoint(lineB, linaA)
-        point1ToVec = vector(point1[0], point1[1])
-        point2ToVec = vector(point2[0], point2[1])
-        point3ToVec = vector(point3[0], point3[1])
-        line(file, point1ToVec, point2ToVec, O)
-        line(file, point2ToVec, point3ToVec, O)
-        line(file, point3ToVec, point1ToVec, O)
+    # ここに出力を行うトラスの個数を打ち込む
+    torasuuumber = 5
+    # 各トラスの解析を行う際のループ数を入力
+    timesOfKaiseki = 10000
+    # ここからトラス構造の探索が行われる
+    saerchPointArrayLists = []
+    counter = 0
+    # これまでの最小となる誤差を保持
+    minimumGosa = float("inf")
+    minimumBasePointarray = []
+    while counter < timesOfKaiseki:
+        counter += 1
+        saerchPointArrayLists.append(
+            [(random.random(), gaishuuAtumi), (random.random(), gaishuuAtumi)]
+        )
+    for basePointArray in saerchPointArrayLists:
+        if basePointArray[0][1] > 0:
+            calucurateGosa = sannkakuNikunuki(basePointArray, 60)
+            if calucurateGosa[0] == True:
+                minimumGosa = calucurateGosa[1]
+                minimumBasePointarray = calucurateGosa[2]
 
-    # 肉抜きを行う関数(翼の上面に辺がある三角形後縁)
-    def makeSannkakuNikunukiDownKouenn(
-        file, base1, base2, base3, rateForGaishuu, rateForTorasuNikunuki
-    ):
-        line12 = makeLiearEquation(base1.x, base2.x, base1.y, base2.y)
-        line13 = makeLiearEquation(base1.x, base3.x, base1.y, base3.y)
-        line23 = makeLiearEquation(base2.x, base3.x, base2.y, base3.y)
-        linaA = makeLinearPararellEquation(line12, rateForTorasuNikunuki, "down")
-        lineB = makeLinearPararellEquation(line13, rateForTorasuNikunuki, "up")
-        lineC = makeLinearPararellEquation(line23, rateForGaishuu, "up")
-        point1 = findCrossPoint(linaA, lineC)
-        point2 = findCrossPoint(lineC, lineB)
-        point3 = findCrossPoint(lineB, linaA)
-        point1ToVec = vector(point1[0], point1[1])
-        point2ToVec = vector(point2[0], point2[1])
-        point3ToVec = vector(point3[0], point3[1])
-        line(file, point1ToVec, point2ToVec, O)
-        line(file, point2ToVec, point3ToVec, O)
-        line(file, point3ToVec, point1ToVec, O)
-
-    # 現在のリブの図面を出力 要精度-黒 作成時に使う線-青 補助線-ピンク
-    # # 翼型 切らないのでピンク
-    color(file, 255, 0, 255)
-    spline(file, FoilPs, O)
-    # 中心線 アセンブリで見るので青
-    color(file, 0, 0, 255)
-    spline(file, CamberPs, O)
-    # プランク 切るので黒
-    color(file, 0, 0, 0)
-    spline(file, PlankPs, O)
-    # リブキャップ切るので黒
-    color(file, 0, 0, 0)
-    spline(file, RibCap_uPs, O)
-    spline(file, RibCap_dPs, O)
-    # ストリンガー出力 切るので黒
-    color(file, 0, 0, 0)
-    WriteStringer(file, StringerDT, O)
-    WriteStringer(file, stringerU1ToVec, O)
-    WriteStringer(file, stringerU2ToVec, O)
-    WriteStringer(file, stringerU3ToVec, O)
-    WriteStringer(file, stringerD1ToVec, O)
-    WriteStringer(file, stringerD2ToVec, O)
-    WriteStringer(file, stringerD3ToVec, O)
-    # WriteStringer(file, stringer(vector(xsl, 0), vector(0, 0), e, True), O)
-
-    # プランク、リブキャップ境目出力 切るので黒
-    color(file, 0, 0, 0)
-    line(file, StringerU.A + O, div_P2(StringerU.D, StringerU.A, 1 + tp / e) + O)
-    line(file, StringerDL.A + O, div_P2(StringerDL.D, StringerDL.A, 1 + tp / e) + O)
-    # 桁穴出力切るので黒
-    color(file, 0, 0, 0)
-    WriteEllipse(file, Pipe, O)
-    # アセンブリ棒穴　切るので黒
-    color(file, 0, 0, 0)
-    WriteCircle(file, Assembly, O)
-    # 後縁材の前縁側の一辺を出力 切ると思うので黒
-    color(file, 0, 0, 0)
-    line(file, TrailU, TrailD, O)
-    # 前縁材の出力 切るが、黒だと図面が汚いので赤
-    if use_l:
-        color(file, 255, 0, 0)
-        spline(file, LeadPs, O)
-        if use_la:
-            # 前縁材の端線の出力
-            line(file, LeadPs[0], LeadEndP2U, O)
-            line(file, LeadPs[-1], LeadEndP2D, O)
-            # 前縁材の水平線を出力
-            line(file, LeadPs[0], LeadPs[0] - vector(lo, 0), O)
-            line(file, LeadPs[-1], LeadPs[-1] - vector(lo, 0), O)
-            spline(file, offset(LeadPs, offset_l, 0, 1), O)
-    # 水平、鉛直線 特別に緑
-    color(file, 0, 170, 0)
-    line(file, hlineP1, hlineP2, O)
-    line(file, vlineP1, vlineP2, O)
-
-    # トラス肉抜きを出力(前縁)
-    makeSannkakuNikunukiDownZennenn(
-        file,
-        basePointNikunuki_U2[0],
-        basePointNikunuki_D2[0],
-        basePointNIkunuki_D3[0],
-        170,
-        5,
-    ),
-    makeSannkakuNikunukiUpZennenn(
-        file,
-        basePointNIkunuki_D3[0],
-        basePointNikunuki_U3[0],
-        basePointNikunuki_U2[0],
-        30,
-        5,
-    ),
-    makeSannkakuNikunukiDownZennenn(
-        file,
-        basePointNikunuki_U3[0],
-        basePointNIkunuki_D3[0],
-        basePointNikunuki_D4[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiUpZennenn(
-        file,
-        basePointNikunuki_D4[0],
-        basePointNikunuki_U4[0],
-        basePointNikunuki_U3[0],
-        50,
-        5,
-    ),
-    makeSannkakuNikunukiDownZennenn(
-        file,
-        basePointNikunuki_U4[0],
-        basePointNikunuki_D4[0],
-        basePointNikunuki_D5[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiUpZennenn(
-        file,
-        basePointNikunuki_D5[0],
-        basePointNikunuki_U5[0],
-        basePointNikunuki_U4[0],
-        90,
-        5,
-    ),
-
-    # ここから後縁肉抜きの記述
-    makeSannkakuNikunukiUpKouenn(
-        file,
-        basePointNikunuki_U6[0],
-        basePointNikuniki_D6[0],
-        basePointNikuniki_D7[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiDownKouenn(
-        file,
-        basePointNikuniki_D7[0],
-        basePointNikunuki_U6[0],
-        basePointNikunuki_U7[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiUpKouenn(
-        file,
-        basePointNikunuki_U7[0],
-        basePointNikuniki_D7[0],
-        basePointNikuniki_D8[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiDownKouenn(
-        file,
-        basePointNikuniki_D8[0],
-        basePointNikunuki_U7[0],
-        basePointNikunuki_U8[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiUpKouenn(
-        file,
-        basePointNikunuki_U8[0],
-        basePointNikuniki_D8[0],
-        basePointNikuniki_D9[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiDownKouenn(
-        file,
-        basePointNikuniki_D9[0],
-        basePointNikunuki_U8[0],
-        basePointNikunuki_U9[0],
-        120,
-        5,
-    ),
-    makeSannkakuNikunukiDownKouenn(
-        file,
-        basePointNikunuki_U9[0],
-        basePointNikuniki_D9[0],
-        basePointNikuniki_D10[0],
-        120,
-        5,
-    ),
-    print(k)
-
-    # # ここから後縁肉抜きへ
-    # # 丸肉抜き出力 前縁から
-    # # 最前縁の丸の中心の座標
-    # x_cir = Pipe.C.x + (d + dd) / 2
-    # x_cir += (f_u(x_cir) - f_d(x_cir)) / 2
-    # light_Cs = [
-    #     circle((f_u(x_cir) - f_d(x_cir)) / 2 - w_circle, vector(x_cir, f_camber(x_cir)))
-    # ]
-    # i = 1
-    # while True:
-    #     x_cir = light_Cs[i - 1].O.x + light_Cs[i - 1].r
-    #     x_cir += (f_u(x_cir) - f_d(x_cir)) / 2
-    #     light_Cs += [
-    #         circle(
-    #             (f_u(x_cir) - f_d(x_cir)) / 2 - w_circle, vector(x_cir, f_camber(x_cir))
-    #         )
-    #     ]
-    #     # Assembly棒より前縁側にあるとき
-    #     if not light_Cs[i].O.x + light_Cs[i].r < Assembly.O.x - Assembly.r - w_circle:
-    #         light_Cs = light_Cs[:-1]  # 被ったのはとりのぞく
-    #         break
-    #     i += 1
-    # for C in light_Cs:
-    #     print("circle")
-    #     WriteCircle(file, C, O, WriteCenter=True)
-
-    # 番号出力 切らないのでピンク
-    color(file, 255, 0, 255)
-    WriteText(
-        file, vector(c * 0.05, O.y + f_camber(c * 0.05)), f"{PlaneNumber}-{k}", height=7
-    )
-
-# 設定出力 切らないのでピンク
-color(file, 255, 0, 255)
-WriteText(
-    file,
-    vector(RootChord * 1.05, 0),
-    f"""根翼弦 : {RootChord} mm
-端翼弦 : {EndChord} mm
-根ねじり上げ : {RootDelta} °
-端ねじり上げ : {EndDelta} °
-根の桁位置 : {RootR} %
-端の桁位置 : {EndR} %
-根の翼型 : {RootFoilName}
-端の翼型 : {EndFoilName}
-半リブがあるか : {use_half}
-プランク厚さ : {tp} mm
-ストリンガー断面の一辺 : {e} mm
-リブキャップ厚さ : {t} mm
-桁長軸径 : {d+dd} mm
-桁短軸径 : {d} mm
-アセンブリ棒径 : {da} mm
-アセンブリ棒余白 : {h} mm
-前縁がある : {str(use_l)}
-前縁材の前縁からのずれ : {lo} mm
-肉抜き最小骨格幅 : {w_tri} mm
-三角肉抜き端半径 : {r_tri} mm
-前縁-肉抜き 長さ : {first_light_r} mm
-丸肉抜き 最小骨格幅 : {w_circle} mm
-プランク上開始位置 : {rpu:.1f} %
-プランク下開始位置 : {rpd:.1f} %
-ストリンガー下後縁位置 : {rsdt} %
-ストリンガー前縁は前縁から : {xsl} mm
-後退角 : {sweep*180/numpy.pi} °
-
-
-""",
-)
-
-
-file.close
-print("completed")
+        elif basePointArray[0][1] <= 0:
+            calucurateGosa = sannkakuNikunuki(basePointArray, -60)
+            if calucurateGosa[0] == True:
+                minimumGosa = calucurateGosa[1]
+                minimumBasePointarray = calucurateGosa[2]
+    basePointArrayLists_fixed.append(minimumBasePointarray)
+    print(basePointArrayLists_fixed, "findAnswer")
