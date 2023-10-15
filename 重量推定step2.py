@@ -6,7 +6,7 @@ tannribuHokyouDensity = 0.00038  # 端リブ補強材（バルサ＋ボンド）
 ribCapDensity = 0.00038  # リブキャップの密度（g/リブキャップ１mm²）
 densityOfKouennzai = 0.0001294  # 後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
 densityOfStringer = 0.0001294  # ストリンガーの密度（ｇ/mm³） つまり、2024的にはバルサの密度を書けばよい
-densityOfRyoumennteap = 0.0000125  # 両面テープの密度（g/mm2）
+densityOfRyoumennteap = 0.00040  # 両面テープの密度（g/mm2）
 
 # １次構造
 weightOfketa = 0  # 桁の重量(g)
@@ -14,10 +14,10 @@ weightOfFrange = 0  # フランジの重量
 weightOfKannzashi = 0  # かんざしの重量
 
 # 既知の値
-lengthOfKeta = 2900  # 桁の長さ
+lengthOfKeta = 3400  # 桁の長さ
 numberOfRyoumennteapForVerticalForYokugenn = 7  # 翼弦に対して垂直な方向の両面テープ数
 sutairoDensity = 0.000031  # スタイロの密度(g/mm3)
-ketaLengthFrangeinsideToFrangeInside = 2900  # 桁長さ
+ketaLengthFrangeinsideToFrangeInside = 3400  # 桁長さ
 NumberOfStringer = 7  # ストリンガーの本数
 lengthOfstringerSide1 = 5  # ストリンガーの一辺の長さ
 lengthOFStringerSide2 = 5  # ストリンガーの一辺の長さ
@@ -25,11 +25,11 @@ densityOfFilm = 0.000001  # フィルムの密度（ｇ/mm³）
 crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
 # 読み取りファイルと書き出しファイルの設定a
-yokuNumber = "水平尾翼"  # 条件を
-readingFilePath = r"C:\Users\ryota2002\Documents\libu\2024 本試算\2024本試算リブ間140mm垂直尾翼.xlsx"
+yokuNumber = "水平"  # 条件を
+readingFilePath = r"C:\Users\ryota2002\Documents\推定結果置き場\重量推定水平1015.xlsx"
 
 # リブ枚数
-numberOfRib = 21
+numberOfRib = 23
 
 
 # Excelファイルの取り込み

@@ -12,24 +12,24 @@
 
 # ファイル関連
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
-Directory = r"C:\Users\ryota2002\Documents\libu"
+Directory = r"C:\Users\ryota2002\Documents\推定結果置き場"
 ProjectName = "aaa"
-exportFileName = "16期1翼重量9月.xlsx"
+exportFileName = "重量推定垂直1015.xlsx"
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
-RootChord = 1341
-EndChord = 1248
+RootChord = 800
+EndChord = 800
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 EndDelta = 0
 # 端、根の桁位置[%]
-RootR = 31
-EndR = 31
+RootR = 37
+EndR = 37
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "DAE-41.dat"
-EndFoilName = "DAE-41.dat"
+RootFoilName = "NACA-0009.dat"
+EndFoilName = "NACA-0009.dat"
 # リブ枚数
-n = 16
+n = 21
 # 何翼?
 PlaneNumber = "0"
 # 半リブあり?
@@ -44,15 +44,15 @@ e = 5
 t = 1
 # 桁径[mm]	楕円の短軸方向
 # 49.5
-d = 55
+d = 30
 # 桁径		楕円の長軸-短軸 円なら0
-dd = 55 - d
+dd = 30 - d
 # アセンブリ棒径[mm]
 da = 30
 # アセンブリ棒余白[mm]
 h = 7
 # 後縁材の前縁側の辺の長さ[mm]
-ht = 8
+ht = 11
 # 前縁材があるか boolean
 use_l = False
 # 前縁材の端線、水平線,offset線の出力
@@ -72,9 +72,9 @@ w_circle = 15
 
 # 上面下面で同じ値を指定することは不可
 # 後縁補強材上辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_U = 99.9
+startPointOfKouennHokyou_U = 80
 # 後縁補強材下辺開始点(翼弦に対する％)
-startPointOfKouennHokyou_D = 99.99
+startPointOfKouennHokyou_D = 80
 
 # 上面下面で同じ値を指定することは不可
 # 端リブ補強材上辺開始点(翼弦に対する％)
