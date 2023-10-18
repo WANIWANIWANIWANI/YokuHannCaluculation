@@ -27,8 +27,8 @@ EndDelta = 0
 RootR = 37
 EndR = 37
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "dae21.dat"
-EndFoilName = "dae21.dat"
+RootFoilName = "DAE-41.dat"
+EndFoilName = "DAE-41.dat"
 # リブ枚数
 n = 3
 # 何翼?
@@ -131,6 +131,14 @@ nikunukiBasePoint_d4_Kouenn = 56.5
 nikunukiBasePoint_d5_Kouenn = 58.5
 nikunukiBasePoint_d6_Kouenn = 63
 nikunukiBasePoint_d7_Kouenn = 65
+
+# カーボン積層を行うためのジグ製作関連
+use_carbonHokyou = True
+# CNCのドリル直径(mm単位)
+CNC_dorill = 5
+jigu_length_tannpenn = 200
+jigu_length_chouhenn = 1046
+
 
 ##リブガキの際の分割数を指定
 # 基本は200、数が大きいほど精密なリブが書けるが大きくし過ぎるとエラー
@@ -534,6 +542,14 @@ def WriteText(file, O, text, height=20, angle=0):
     file.write(f"text\n{O.x},{O.y}\n{str(height)}\n{str(angle)}\n{text}\n\n")
 
 
+# # 4点を順に引数として渡すと、各点を結ぶ四角形を出力する
+# def writeSquare(file, base1, base2, base3, base4):
+#     line(file, base1, base2, O)
+#     line(file, base2, base3, O)
+#     line(file, base3, base4, O)
+#     line(file, base4, base1, O)
+
+
 # 関数、クラス定義おわり
 # ------------------------------------------------------------------------------------------------
 # メイン
@@ -627,7 +643,10 @@ y_u, y_d = [], []  # 定義前に使うと誤解されないように
 for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     # y座標の設定 かぶらないようにするため。1cmの隙間もあける
     if k > 1:  # k=1のときO=(0,0)にしている
-        O.y -= numpy.max(y_u) - numpy.min(y_d) + 150
+        if use_carbonHokyou == False:
+            O.y -= numpy.max(y_u) - numpy.min(y_d) + 150
+        else:
+            O.y -= numpy.max(y_u) - numpy.min(y_d) + 800
 
     # 翼型の点のリストの出力。 上下の翼型を関数として作成。
     # 混ぜる割合。　根で0、端で1。
@@ -793,9 +812,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     # 上反角に関する桁穴のy座標の移動
     if use_JouhannkakuChousei:
         lengthOfMoveY = y_chousei[k - 1] * calucaulateYokuaAtumi(x_pipe) / 100
-        print(x_pipe, "w")
         Pipe_C = vector(x_pipe, f_camber(x_pipe) + lengthOfMoveY)
-        print(k, y_chousei[k - 1], calucaulateYokuaAtumi(x_pipe))
     else:
         Pipe_C = vector(x_pipe, f_camber(x_pipe))
     Pipe = ellipse(
@@ -927,6 +944,49 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             O,
         )
 
+    # ジグ出力のための座標計算(ジグを利用する時のみ出力)
+    if use_carbonHokyou == True:
+        # ジグの内側周
+        basepoint_vec1 = vector(-35, -jigu_length_tannpenn * 1 / 3)
+        basepoint_vec2 = vector(-35, jigu_length_tannpenn * 2 / 3 + CNC_dorill)
+        basepoint_vec3 = vector(
+            -35 + jigu_length_chouhenn,
+            jigu_length_tannpenn * 2 / 3 + CNC_dorill,
+        )
+        basepoint_vec4 = vector(-35 + jigu_length_chouhenn, basepoint_vec1.y)
+
+        # ジグとリブの高さ合わせのための切り込み線を出力
+        # 後縁部分
+        basepoint_Kirikomi_kouenn = RibCap_uPs[-40]
+        cut_point1_Kouenn_vec = vector(
+            basepoint_Kirikomi_kouenn.x + 15, basepoint_Kirikomi_kouenn.y
+        )
+        cut_point2_Kouenn_vec = vector(
+            basepoint_Kirikomi_kouenn.x + 15,
+            basepoint_Kirikomi_kouenn.y + CNC_dorill * 2,
+        )
+        cut_point3_Kouenn_vec = vector(
+            O.x - 35 + jigu_length_chouhenn, basepoint_Kirikomi_kouenn.y
+        )
+        cut_point4_Kouenn_vec = vector(
+            O.x - 35 + jigu_length_chouhenn,
+            basepoint_Kirikomi_kouenn.y + CNC_dorill * 2,
+        )
+        # 前縁部分
+        basepoint_Kirikomi_Zenenn = PlankPsU[40]
+        cut_point1_Zenenn_vec = vector(
+            basepoint_Kirikomi_Zenenn.x - 15, basepoint_Kirikomi_Zenenn.y
+        )
+        cut_point2_Zenenn_vec = vector(
+            basepoint_Kirikomi_Zenenn.x - 15,
+            basepoint_Kirikomi_Zenenn.y + CNC_dorill * 2,
+        )
+        cut_point3_Zenenn_vec = vector(O.x - 35, basepoint_Kirikomi_Zenenn.y)
+        cut_point4_Zenenn_vec = vector(
+            O.x - 35,
+            basepoint_Kirikomi_Zenenn.y + CNC_dorill * 2,
+        )
+
     # トラス肉抜きを出力する
     sankakkeiObject_1 = makeSannkakuNikunukiObject(
         convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u1_Zenenn, -0.50),
@@ -1038,31 +1098,25 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     line(file, hlineP1, hlineP2, O)
     line(file, vlineP1, vlineP2, O)
 
-    # # ここから後縁肉抜きへ
-    # # 丸肉抜き出力 前縁から
-    # # 最前縁の丸の中心の座標
-    # x_cir = Pipe.C.x + (d + dd) / 2
-    # x_cir += (f_u(x_cir) - f_d(x_cir)) / 2
-    # light_Cs = [
-    #     circle((f_u(x_cir) - f_d(x_cir)) / 2 - w_circle, vector(x_cir, f_camber(x_cir)))
-    # ]
-    # i = 1
-    # while True:
-    #     x_cir = light_Cs[i - 1].O.x + light_Cs[i - 1].r
-    #     x_cir += (f_u(x_cir) - f_d(x_cir)) / 2
-    #     light_Cs += [
-    #         circle(
-    #             (f_u(x_cir) - f_d(x_cir)) / 2 - w_circle, vector(x_cir, f_camber(x_cir))
-    #         )
-    #     ]
-    #     # Assembly棒より前縁側にあるとき
-    #     if not light_Cs[i].O.x + light_Cs[i].r < Assembly.O.x - Assembly.r - w_circle:
-    #         light_Cs = light_Cs[:-1]  # 被ったのはとりのぞく
-    #         break
-    #     i += 1
-    # for C in light_Cs:
-    #     print("circle")
-    #     WriteCircle(file, C, O, WriteCenter=True)
+    # カーボン補強のためのジグを出力
+    if use_carbonHokyou == True:
+        # ジグの外形の四角形を出力
+        line(file, basepoint_vec1, basepoint_vec2, O)
+        line(file, basepoint_vec2, basepoint_vec3, O)
+        line(file, basepoint_vec3, basepoint_vec4, O)
+        line(file, basepoint_vec4, basepoint_vec1, O)
+
+        # ジグの切り取り線（kouenn）
+        line(file, cut_point1_Kouenn_vec, cut_point2_Kouenn_vec, O)
+        line(file, cut_point2_Kouenn_vec, cut_point4_Kouenn_vec, O)
+        line(file, cut_point4_Kouenn_vec, cut_point3_Kouenn_vec, O)
+        line(file, cut_point3_Kouenn_vec, cut_point1_Kouenn_vec, O)
+
+        # ジグの切り取り線(zennenn)
+        line(file, cut_point1_Zenenn_vec, cut_point2_Zenenn_vec, O)
+        line(file, cut_point2_Zenenn_vec, cut_point4_Zenenn_vec, O)
+        line(file, cut_point4_Zenenn_vec, cut_point3_Zenenn_vec, O)
+        line(file, cut_point3_Zenenn_vec, cut_point1_Zenenn_vec, O)
 
     # 番号出力 切らないのでピンク
     color(file, 255, 0, 255)
