@@ -27,8 +27,8 @@ EndDelta = 0
 RootR = 37
 EndR = 37
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "dae21.dat"
-EndFoilName = "dae21.dat"
+RootFoilName = "DAE-41.dat"
+EndFoilName = "DAE-41.dat"
 # リブ枚数
 n = 3
 # 何翼?
@@ -91,8 +91,6 @@ xsl = 20 + e
 # ストリンガー位置翼上部[%]
 stringerU1Rate = 4
 stringerU2Rate = 10
-stringerU4Rate = 20
-stringerU5Rate = 40
 stringerU3Rate = 57
 # ストリンガー位置翼下部[%]
 stringerD1Rate = 2
@@ -132,9 +130,13 @@ nikunukiBasePoint_d5_Kouenn = 58.5
 nikunukiBasePoint_d6_Kouenn = 63
 nikunukiBasePoint_d7_Kouenn = 65
 
+# halfRibの切り取り線
+halfRibLine_u = rpu
+halfRibLine_d = 40
+
 ##リブガキの際の分割数を指定
 # 基本は200、数が大きいほど精密なリブが書けるが大きくし過ぎるとエラー
-bunnkatyu = 200
+bunnkatyu = 250
 
 
 # 機体諸元
@@ -793,9 +795,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     # 上反角に関する桁穴のy座標の移動
     if use_JouhannkakuChousei:
         lengthOfMoveY = y_chousei[k - 1] * calucaulateYokuaAtumi(x_pipe) / 100
-        print(x_pipe, "w")
         Pipe_C = vector(x_pipe, f_camber(x_pipe) + lengthOfMoveY)
-        print(k, y_chousei[k - 1], calucaulateYokuaAtumi(x_pipe))
     else:
         Pipe_C = vector(x_pipe, f_camber(x_pipe))
     Pipe = ellipse(
@@ -982,6 +982,13 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     makeSannkakuNinuki(file, sankakkeiObject_7)
     makeSannkakuNinuki(file, sankakkeiObject_8)
     makeSannkakuNinuki(file, sankakkeiObject_9)
+
+    # halfRibの線を出力
+    print("half", halfRibLine_u, halfRibLine_d)
+    halfRibCutLine_u = findNearestPointBasedOnX(c * halfRibLine_u, PlankPsU)
+    halfRibCutLine_d = findNearestPointBasedOnX(c * halfRibLine_d, PlankPsD)
+    print(halfRibCutLine_u[0], "half")
+    line(file, halfRibCutLine_u[0], halfRibCutLine_d[0], O)
 
     # 現在のリブの図面を出力 要精度-黒 作成時に使う線-青 補助線-ピンク
     # # 翼型 切らないのでピンク
