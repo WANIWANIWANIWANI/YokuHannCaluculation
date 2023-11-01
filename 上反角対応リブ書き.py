@@ -18,8 +18,8 @@ Directory = r"C:\Users\ryota2002\Documents\libu"
 
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
-RootChord = 1016
-EndChord = 1016
+RootChord = 1000
+EndChord = 600
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 EndDelta = 0
@@ -29,15 +29,19 @@ EndR = 37
 # 端、根の翼型のファイル名 datファイルを入れる
 RootFoilName = "DAE-41.dat"
 EndFoilName = "DAE-41.dat"
-# リブ枚数
-n = 3
+# リブ枚数(1つの翼に立てる枚数)
+n = 5
+# 分割してリブを出力
+isUseBunkatuShuturyoku = True
+startRib = 1  # 何枚目から出力を行うか
+endRib = 4  # 何枚目まで出力するか
 # 何翼?
 PlaneNumber = "4"
 # 半リブあり?
 use_half = True
 
 # 上反角を付けるために桁をy軸方向へ移動させるか？
-use_JouhannkakuChousei = True
+use_JouhannkakuChousei = False
 # 各リブのy軸の移動量をxに対応する翼厚みに対する％でリスト形式で渡す
 y_chousei = [0, 1, 2]
 
@@ -131,8 +135,7 @@ nikunukiBasePoint_d6_Kouenn = 63
 nikunukiBasePoint_d7_Kouenn = 65
 
 # halfRibの切り取り線
-halfRibLine_u = rpu
-halfRibLine_d = 40
+halfRibLine_d = 0.60
 
 ##リブガキの際の分割数を指定
 # 基本は200、数が大きいほど精密なリブが書けるが大きくし過ぎるとエラー
@@ -540,6 +543,13 @@ def WriteText(file, O, text, height=20, angle=0):
 # ------------------------------------------------------------------------------------------------
 # メイン
 sweep *= numpy.pi / 180
+
+# リブの分割出力を行う
+if isUseBunkatuShuturyoku:
+    deltaC = (RootChord - EndChord) / (n - 1)
+    RootChord = RootChord - deltaC * (startRib - 1)
+    EndChord = RootChord - deltaC * (endRib - 1)
+    n = endRib - startRib + 1
 
 # 翼型読み込み
 EndFoilData = to_vectors(
@@ -984,11 +994,8 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     makeSannkakuNinuki(file, sankakkeiObject_9)
 
     # halfRibの線を出力
-    print("half", halfRibLine_u, halfRibLine_d)
-    halfRibCutLine_u = findNearestPointBasedOnX(c * halfRibLine_u, PlankPsU)
-    halfRibCutLine_d = findNearestPointBasedOnX(c * halfRibLine_d, PlankPsD)
-    print(halfRibCutLine_u[0], "half")
-    line(file, halfRibCutLine_u[0], halfRibCutLine_d[0], O)
+    halfRibCutLine_d = findNearestPointBasedOnX(c * halfRibLine_d, RibCap_dPs)
+    line(file, PlankPsU[-2], halfRibCutLine_d[0], O)
 
     # 現在のリブの図面を出力 要精度-黒 作成時に使う線-青 補助線-ピンク
     # # 翼型 切らないのでピンク
