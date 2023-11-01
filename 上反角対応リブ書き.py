@@ -14,12 +14,12 @@
 # 出力するテキストファイルの名前。拡張子は不要
 ProjectName = "1012"
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
-Directory = r"C:\Users\ryota2002\Documents\libu"
+Directory = r"C:\Users\ryota2002\Documents\2024決定版ファイル"
 
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
 RootChord = 1000
-EndChord = 600
+EndChord = 1000
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 EndDelta = 0
@@ -27,12 +27,12 @@ EndDelta = 0
 RootR = 37
 EndR = 37
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "DAE-41.dat"
-EndFoilName = "DAE-41.dat"
+RootFoilName = "DAE21saito.dat"
+EndFoilName = "DAE21saito.dat"
 # リブ枚数(1つの翼に立てる枚数)
 n = 5
 # 分割してリブを出力
-isUseBunkatuShuturyoku = True
+isUseBunkatuShuturyoku = False
 startRib = 1  # 何枚目から出力を行うか
 endRib = 4  # 何枚目まで出力するか
 # 何翼?
@@ -53,7 +53,7 @@ e = 5
 # ストリンガー断面の１辺[mm](翼弦平行方向)
 e1 = 5.5
 # リブキャップ厚さ[mm]
-t = 1
+t = 0.1
 # 桁径[mm]	楕円の短軸方向
 d = 89.75
 # 桁径		楕円の長軸-短軸 円なら0
@@ -139,7 +139,7 @@ halfRibLine_d = 0.60
 
 ##リブガキの際の分割数を指定
 # 基本は200、数が大きいほど精密なリブが書けるが大きくし過ぎるとエラー
-bunnkatyu = 250
+bunnkatyu = 200
 
 
 # 機体諸元
@@ -700,7 +700,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         [FoilU[i] for i in range(len(FoilU) - 2) if FoilU[i + 2].x <= x_plank_u]
         + [FoilU[-2], FoilD[0], FoilD[1]]
         + [FoilD[i] for i in range(2, len(FoilD)) if FoilD[i - 2].x <= x_plank_d],
-        tp + t,
+        tp + t ,
         0,
     )
     PlankPsU = [P for P in PlankPs if P.y >= 0][::-1]
