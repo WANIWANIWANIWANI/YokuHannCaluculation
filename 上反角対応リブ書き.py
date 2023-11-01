@@ -700,7 +700,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         [FoilU[i] for i in range(len(FoilU) - 2) if FoilU[i + 2].x <= x_plank_u]
         + [FoilU[-2], FoilD[0], FoilD[1]]
         + [FoilD[i] for i in range(2, len(FoilD)) if FoilD[i - 2].x <= x_plank_d],
-        tp,
+        tp + t,
         0,
     )
     PlankPsU = [P for P in PlankPs if P.y >= 0][::-1]
