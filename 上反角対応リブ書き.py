@@ -12,14 +12,14 @@
 
 # ファイル関連
 # 出力するテキストファイルの名前。拡張子は不要
-ProjectName = "1012"
+ProjectName = "水平尾翼"
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\2024決定版ファイル"
 
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
-RootChord = 1000
-EndChord = 1000
+RootChord = 738
+EndChord = 1056
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 EndDelta = 0
@@ -27,16 +27,16 @@ EndDelta = 0
 RootR = 37
 EndR = 37
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "DAE21saito.dat"
-EndFoilName = "DAE21saito.dat"
+RootFoilName = "SD8020.dat"
+EndFoilName = "SD8020.dat"
 # リブ枚数(1つの翼に立てる枚数)
-n = 5
+n = 23
 # 分割してリブを出力
 isUseBunkatuShuturyoku = False
-startRib = 1  # 何枚目から出力を行うか
-endRib = 4  # 何枚目まで出力するか
+startRib = 11  # 何枚目から出力を行うか
+endRib = 13  # 何枚目まで出力するか
 # 何翼?
-PlaneNumber = "4"
+PlaneNumber = "水平尾翼"
 # 半リブあり?
 use_half = True
 
@@ -55,15 +55,15 @@ e1 = 5.5
 # リブキャップ厚さ[mm]
 t = 0.1
 # 桁径[mm]	楕円の短軸方向
-d = 89.75
+d = 101.388
 # 桁径		楕円の長軸-短軸 円なら0
-dd = 89.75 - d
+dd = 101.832 - d
 # アセンブリ棒径[mm]
 da = 30  # 元は30
 # アセンブリ棒余白[mm]
 h = 7
 # 後縁材の前縁側の辺の長さ[mm]
-ht = 8  # 元は8
+ht = 10  # 元は8
 # 前縁材があるか boolean
 use_l = False
 # 前縁材の端線、水平線,offset線の出力
@@ -135,16 +135,16 @@ nikunukiBasePoint_d6_Kouenn = 63
 nikunukiBasePoint_d7_Kouenn = 65
 
 # halfRibの切り取り線
-halfRibLine_d = 0.60
+halfRibLine_d = 0.375
 
 ##リブガキの際の分割数を指定
 # 基本は200、数が大きいほど精密なリブが書けるが大きくし過ぎるとエラー
-bunnkatyu = 200
+bunnkatyu = 170
 
 
 # 機体諸元
 # 0翼取り付け角[°]
-alpha = 0
+alpha = 4.2
 # 後退角(リブ厚みの修正用)[°]
 sweep = 0
 
@@ -700,7 +700,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         [FoilU[i] for i in range(len(FoilU) - 2) if FoilU[i + 2].x <= x_plank_u]
         + [FoilU[-2], FoilD[0], FoilD[1]]
         + [FoilD[i] for i in range(2, len(FoilD)) if FoilD[i - 2].x <= x_plank_d],
-        tp + t ,
+        tp + t,
         0,
     )
     PlankPsU = [P for P in PlankPs if P.y >= 0][::-1]
@@ -855,6 +855,8 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         # 前縁材上下の後縁側のx座標
         x_pu = optimize.newton(lambda x: f_lu(x) - f_pu(x), 0.1 * c)
         x_pd = optimize.newton(lambda x: f_ld(x) - f_pd(x), lo + tp)
+        x_pu = c * stringerU2Rate / 100 + e / 2
+        x_pd = c * stringerD2Rate / 100 + e / 2
         LeadU = [vector(x_pu, f_lu(x_pu))] + [P for P in LeadU if P.x < x_pu]
         LeadD = [P for P in LeadD if P.x < x_pd] + [vector(x_pd, f_ld(x_pd))]
         LeadPs = LeadU + LeadD
