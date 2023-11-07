@@ -12,7 +12,7 @@
 
 # ファイル関連
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
-Directory = r"C:\Users\ryota2002\Documents\推定結果置き場"
+Directory = r"C:\Users\ryota2002\Documents\その他"
 ProjectName = "aaa"
 exportFileName = "重量推定垂直1015.xlsx"
 # 翼関連
@@ -99,6 +99,9 @@ plankHokyouStartRate_U = 57
 plankHokyouEndPoint_U = rpu + 0.01  # 値を小さくしすぎるとエラーになる
 # プランク補強材の厚み(最大翼厚にたいする％で表示)
 plankHokyouStringerPlusA = 3
+
+# halfRibの切り取り線
+halfRibLine_d = 0.375
 
 
 # 機体諸元
@@ -997,7 +1000,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         # halfRib切り取り線を決める２点を出力
         # 上面に関してはプランク端、下面は、stringerDTの出力位置
         # stringerDtのｘ座標を求める
-        placeStartPointOfHalfRib_D = c * rsdt / 100 * cos(sweep)
+        placeStartPointOfHalfRib_D = c * halfRibLine_d  * cos(sweep)
         # この値に最も近いリブキャップ上の位置をリブ下面の切り取り点とする
         nearestPointOfHalfRibCut_d_x = find_nearest(
             x_d, placeStartPointOfHalfRib_D
