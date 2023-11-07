@@ -103,7 +103,72 @@ plankHokyouStringerPlusA = 3
 # halfRibの切り取り線
 halfRibLine_d = 0.375
 
+# トラス肉抜きを行うための基準点を指定する(翼現に対する％表示で設定を行う)
+# 翼弦方向の座標指定
+# 前縁側上面
+nikunukiBasePoint_u1_Zenenn = 6
+nikunukiBasePoint_u2_Zenenn = 11
+nikunukiBasePoint_u3_Zenenn = 13
+nikunukiBasePoint_u4_Zenenn = 15
+nikunukiBasePoint_u5_Zenenn = 24
+nikunukiBasePoint_u6_Zenenn = 26
+##前縁側下面
+nikunukiBasePoint_d1_Zenenn = 8.5
+nikunukiBasePoint_d2_Zenenn = 10.5
+nikunukiBasePoint_d3_Zenenn = 18.5
+nikunukiBasePoint_d4_Zenenn = 20.5
+nikunukiBasePoint_d5_Zenenn = 22.5
+nikunukiBasePoint_d6_Zenenn = 31.5
+# 後縁側上面
+nikunukiBasePoint_u1_Kouenn = 42.5
+nikunukiBasePoint_u2_Kouenn = 50.5
+nikunukiBasePoint_u3_Kouenn = 52.5
+nikunukiBasePoint_u4_Kouenn = 54.5
+nikunukiBasePoint_u5_Kouenn = 59.5
+nikunukiBasePoint_u6_Kouenn = 61.5
+nikunukiBasePoint_u7_Kouenn = 63.5
+nikunukiBasePoint_u8_Kouenn = 68
+# 後縁側下面
+nikunukiBasePoint_d1_Kouenn = 46.5
+nikunukiBasePoint_d2_Kouenn = 48.5
+nikunukiBasePoint_d3_Kouenn = 54.5
+nikunukiBasePoint_d4_Kouenn = 56.5
+nikunukiBasePoint_d5_Kouenn = 58.5
+nikunukiBasePoint_d6_Kouenn = 63
+nikunukiBasePoint_d7_Kouenn = 65
 
+# y軸方向に対する座標指定(あるx座標に対応する翼厚に対する割合を入力（＋方向の移動は、＋０．＠＠、ー方向の移動は、ー０．＠＠で入力）)
+# 前縁側上面
+nikunukiBasePoint_u1_Zenenn_YokuatuRate = -0.50
+nikunukiBasePoint_u2_Zenenn_YokuatuRate = -0.20
+nikunukiBasePoint_u3_Zenenn_YokuatuRate = -0.20
+nikunukiBasePoint_u4_Zenenn_YokuatuRate = -0.20
+nikunukiBasePoint_u5_Zenenn_YokuatuRate = -0.20
+nikunukiBasePoint_u6_Zenenn_YokuatuRate = -0.20
+##前縁側下面
+nikunukiBasePoint_d1_Zenenn_YokuatuRate = 0.20
+nikunukiBasePoint_d2_Zenenn_YokuatuRate = 0.20
+nikunukiBasePoint_d3_Zenenn_YokuatuRate = 0.20
+nikunukiBasePoint_d4_Zenenn_YokuatuRate = 0.20
+nikunukiBasePoint_d5_Zenenn_YokuatuRate = 0.20
+nikunukiBasePoint_d6_Zenenn_YokuatuRate = 0.20
+# 後縁側上面
+nikunukiBasePoint_u1_Kouenn_YokuatuRate = -0.25
+nikunukiBasePoint_u2_Kouenn_YokuatuRate = -0.25
+nikunukiBasePoint_u3_Kouenn_YokuatuRate = -0.25
+nikunukiBasePoint_u4_Kouenn_YokuatuRate = -0.25
+nikunukiBasePoint_u5_Kouenn_YokuatuRate = -0.25
+nikunukiBasePoint_u6_Kouenn_YokuatuRate = -0.25
+nikunukiBasePoint_u7_Kouenn_YokuatuRate = -0.25
+nikunukiBasePoint_u8_Kouenn_YokuatuRate = -0.50
+# 後縁側下面
+nikunukiBasePoint_d1_Kouenn_YokuatuRate = 0.30
+nikunukiBasePoint_d2_Kouenn_YokuatuRate = 0.30
+nikunukiBasePoint_d3_Kouenn_YokuatuRate = 0.30
+nikunukiBasePoint_d4_Kouenn_YokuatuRate = 0.30
+nikunukiBasePoint_d5_Kouenn_YokuatuRate = 0.30
+nikunukiBasePoint_d6_Kouenn_YokuatuRate = 0.30
+nikunukiBasePoint_d7_Kouenn_YokuatuRate = 0.30
 # 機体諸元
 # 0翼取り付け角[°](定常飛行迎角)
 alpha = 0
@@ -1000,7 +1065,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         # halfRib切り取り線を決める２点を出力
         # 上面に関してはプランク端、下面は、stringerDTの出力位置
         # stringerDtのｘ座標を求める
-        placeStartPointOfHalfRib_D = c * halfRibLine_d  * cos(sweep)
+        placeStartPointOfHalfRib_D = c * halfRibLine_d * cos(sweep)
         # この値に最も近いリブキャップ上の位置をリブ下面の切り取り点とする
         nearestPointOfHalfRibCut_d_x = find_nearest(
             x_d, placeStartPointOfHalfRib_D
@@ -1122,11 +1187,160 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
 
         return areaPlankEndHokyou
 
+    ##肉抜きを行う
+    # Vecarrayの形で渡された点の集まりから、第一引数のｘに最も近い座標を返すための関数
+    def findNearestPointBasedOnX(x, VecarrayOfSearch):
+        return [
+            VecarrayOfSearch[i]
+            for i in range(1, len(VecarrayOfSearch))
+            if VecarrayOfSearch[i - 1].x <= x
+        ][-2:]
+
+    # 翼弦のx座標の％、その翼の厚みに対しての移動％を渡された際に移動後のy座標を返す関数
+    def convertYokugennRateGaishuuyohakuToZahyou(yokuGennRate_x, gaishuYohaku):
+        x = c * yokuGennRate_x / 100
+        y_up = findNearestPointBasedOnX(x, PlankPsU)[0].y
+        y_down = findNearestPointBasedOnX(x, PlankPsD)[0].y
+        if gaishuYohaku < 0:
+            return [x, (y_up - y_down) * gaishuYohaku + y_up]
+        elif gaishuYohaku > 0:
+            return [x, (y_up - y_down) * gaishuYohaku + y_down]
+
+    # 肉抜きを行う三角形の3点を[]の形式で渡すと、実際に肉抜きコマンドを出六するmakeSannkakuNikunuki()へ渡すためのsannkakkeiObjectを生成する
+    def makeSannkakuNikunukiObject(P1_list, P2_list, P3_list):
+        sannkakkeiObject = {}
+        sannkakkeiObject["basepoint_1_vec"] = vector(P1_list[0], P1_list[1])
+        sannkakkeiObject["basepoint_2_vec"] = vector(P2_list[0], P2_list[1])
+        sannkakkeiObject["basepoint_3_vec"] = vector(P3_list[0], P3_list[1])
+        return sannkakkeiObject
+
+    # トラス肉抜きobjectを作る
+    sannkakuObjectList = [
+        makeSannkakuNikunukiObject(
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u1_Zenenn, nikunukiBasePoint_u1_Zenenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u2_Zenenn, nikunukiBasePoint_u2_Zenenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d1_Zenenn, nikunukiBasePoint_d1_Zenenn_YokuatuRate
+            ),
+        ),
+        makeSannkakuNikunukiObject(
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u3_Zenenn, nikunukiBasePoint_u3_Zenenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d2_Zenenn, nikunukiBasePoint_d2_Zenenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d3_Zenenn, nikunukiBasePoint_d3_Zenenn_YokuatuRate
+            ),
+        ),
+        makeSannkakuNikunukiObject(
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u4_Zenenn, nikunukiBasePoint_u4_Zenenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u5_Zenenn, nikunukiBasePoint_u5_Zenenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d4_Zenenn, nikunukiBasePoint_d4_Zenenn_YokuatuRate
+            ),
+        ),
+        makeSannkakuNikunukiObject(
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u6_Zenenn, nikunukiBasePoint_u6_Zenenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d5_Zenenn, nikunukiBasePoint_d5_Zenenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d6_Zenenn, nikunukiBasePoint_d5_Zenenn_YokuatuRate
+            ),
+        ),
+        makeSannkakuNikunukiObject(
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u1_Kouenn, nikunukiBasePoint_u1_Kouenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u2_Kouenn, nikunukiBasePoint_u2_Kouenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d1_Kouenn, nikunukiBasePoint_d1_Kouenn_YokuatuRate
+            ),
+        ),
+        makeSannkakuNikunukiObject(
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u3_Kouenn, nikunukiBasePoint_u3_Kouenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d2_Kouenn, nikunukiBasePoint_d2_Kouenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d3_Kouenn, nikunukiBasePoint_d3_Kouenn_YokuatuRate
+            ),
+        ),
+        makeSannkakuNikunukiObject(
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u4_Kouenn, nikunukiBasePoint_u4_Kouenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u5_Kouenn, nikunukiBasePoint_u5_Kouenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d4_Kouenn, nikunukiBasePoint_d4_Kouenn_YokuatuRate
+            ),
+        ),
+        makeSannkakuNikunukiObject(
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d6_Kouenn, nikunukiBasePoint_d6_Kouenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d5_Kouenn, nikunukiBasePoint_d5_Kouenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u6_Kouenn, nikunukiBasePoint_u6_Kouenn_YokuatuRate
+            ),
+        ),
+        makeSannkakuNikunukiObject(
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_d7_Kouenn, nikunukiBasePoint_d7_Kouenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u8_Kouenn, nikunukiBasePoint_u8_Kouenn_YokuatuRate
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_u7_Kouenn, nikunukiBasePoint_u7_Kouenn_YokuatuRate
+            ),
+        ),
+    ]
+
+    def caluculateOfAreaSankakuNikunuki(sankakkeiObject):
+        (ax1, ay1) = (
+            sankakkeiObject["basepoint_1_vec"].x,
+            sankakkeiObject["basepoint_1_vec"].y,
+        )
+        (bx1, by1) = (
+            sankakkeiObject["basepoint_2_vec"].x,
+            sankakkeiObject["basepoint_2_vec"].y,
+        )
+        (cx1, cy1) = (
+            sankakkeiObject["basepoint_3_vec"].x,
+            sankakkeiObject["basepoint_3_vec"].y,
+        )  # 1つ目の三角肉抜きの面積
+        return abs((ax1 - cx1) * (by1 - ay1) - (ax1 - bx1) * (cy1 - ay1)) / 2
+
+    def caluculateTorasuNikunuki(sannkakuObjectList):
+        areaNikunuki = 0
+        for object in sannkakuObjectList:
+            areaNikunuki += caluculateOfAreaSankakuNikunuki(object)
+        return areaNikunuki
+
     # 計算値まとめ
     areayokuGata = caluculateOfareaYokugata()  # 肉抜きをしないときのリブ面積
-    areaSankakuNikunuki = caluculateOfAreaSankakuNikunuki()  # リブの三角抜き面積
-    areaMaruNikunuki = caluculationOfAreaMaruNikunuki()  # リブの円形肉抜き面積
-    totalAreaOfNikunuki = areaSankakuNikunuki + areaMaruNikunuki  # 肉抜き面積の合計
+    totalAreaOfNikunuki = caluculateTorasuNikunuki(sannkakuObjectList)  # 肉抜き面積の合計
     areaHalfRib = caluculationOfAreaHalfRib()  # halfRibの面積
     areaKetaana = areaKetaana()  # 桁穴の面積
     areaTotalRibu = areayokuGata - totalAreaOfNikunuki - areaKetaana  # 最終的なリブ面積
