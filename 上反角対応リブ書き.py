@@ -12,7 +12,7 @@
 
 # ファイル関連
 # 出力するテキストファイルの名前。拡張子は不要
-ProjectName = "水平尾翼"
+ProjectName = "tesetForHalfRib"
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\2024決定版ファイル"
 
@@ -27,10 +27,10 @@ EndDelta = 0
 RootR = 37
 EndR = 37
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "SD8020.dat"
-EndFoilName = "SD8020.dat"
+RootFoilName = "DAE-21.dat"
+EndFoilName = "DAE-21.dat"
 # リブ枚数(1つの翼に立てる枚数)
-n = 23
+n = 3
 # 分割してリブを出力
 isUseBunkatuShuturyoku = False
 startRib = 11  # 何枚目から出力を行うか
@@ -134,12 +134,54 @@ nikunukiBasePoint_d5_Kouenn = 58.5
 nikunukiBasePoint_d6_Kouenn = 63
 nikunukiBasePoint_d7_Kouenn = 65
 
+# 各肉抜きを行うための基準点の翼厚みに対する移動距離(桁穴よりも前縁側)
+sannkakunukunuki_base_move_y_u1_zenenn = -0.50
+sannkakunukunuki_base_move_y_u2_zenenn = -0.20
+sannkakunukunuki_base_move_y_u3_zenenn = -0.20
+sannkakunukunuki_base_move_y_u4_zenenn = -0.20
+sannkakunukunuki_base_move_y_u5_zenenn = -0.20
+sannkakunukunuki_base_move_y_u6_zenenn = -0.20
+sannkakunukunuki_base_move_y_d1_zenenn = 0.20
+sannkakunukunuki_base_move_y_d2_zenenn = 0.20
+sannkakunukunuki_base_move_y_d3_zenenn = 0.20
+sannkakunukunuki_base_move_y_d4_zenenn = 0.20
+sannkakunukunuki_base_move_y_d5_zenenn = 0.20
+sannkakunukunuki_base_move_y_d6_zenenn = 0.20
+
+## 各肉抜きを行うための基準点の翼厚みに対する移動距離(桁穴よりも後縁側)
+sannkakunukunuki_base_move_y_u1_kouenn = -0.25
+sannkakunukunuki_base_move_y_u2_kouenn = -0.25
+sannkakunukunuki_base_move_y_u3_kouenn = -0.20
+sannkakunukunuki_base_move_y_u4_kouenn = -0.25
+sannkakunukunuki_base_move_y_u5_kouenn = -0.25
+sannkakunukunuki_base_move_y_u6_kouenn = -0.25
+sannkakunukunuki_base_move_y_u7_kouenn = -0.25
+sannkakunukunuki_base_move_y_u8_kouenn = -0.50
+sannkakunukunuki_base_move_y_d1_kouenn = 0.30
+sannkakunukunuki_base_move_y_d2_kouenn = 0.30
+sannkakunukunuki_base_move_y_d3_kouenn = 0.30
+sannkakunukunuki_base_move_y_d4_kouenn = 0.30
+sannkakunukunuki_base_move_y_d5_kouenn = 0.30
+sannkakunukunuki_base_move_y_d6_kouenn = 0.30
+sannkakunukunuki_base_move_y_d7_kouenn = 0.30
+
+
+# ハーフリブを利用する際の肉抜き
+nikunukiBasePoint_half_u1_Kouenn = 55
+nikunukiBasePoint_half_u2_Kouenn = 67
+nikunukiBasePoint_half_d1_Kouenn = 60
+# 各肉抜き点のy座標方向の移動
+sannkakunukunuki_base_move_y_u1_kouenn = 0.30
+sannkakunukunuki_base_move_y_u2_kouenn = -0.25
+sannkakunukunuki_base_move_y_d1_kouenn = -0.25
+
+
 # halfRibの切り取り線
 halfRibLine_d = 0.375
 
 ##リブガキの際の分割数を指定
 # 基本は200、数が大きいほど精密なリブが書けるが大きくし過ぎるとエラー
-bunnkatyu = 170
+bunnkatyu = 150
 
 
 # 機体諸元
@@ -941,49 +983,103 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
 
     # トラス肉抜きを出力する
     sankakkeiObject_1 = makeSannkakuNikunukiObject(
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u1_Zenenn, -0.50),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u2_Zenenn, -0.20),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d1_Zenenn, 0.20),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u1_Zenenn, sannkakunukunuki_base_move_y_u1_zenenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u2_Zenenn, sannkakunukunuki_base_move_y_u2_zenenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d1_Zenenn, sannkakunukunuki_base_move_y_d1_zenenn
+        ),
     )
     sankakkeiObject_2 = makeSannkakuNikunukiObject(
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u3_Zenenn, -0.20),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d2_Zenenn, 0.20),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d3_Zenenn, 0.20),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u3_Zenenn, sannkakunukunuki_base_move_y_u3_zenenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d2_Zenenn, sannkakunukunuki_base_move_y_d2_zenenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d3_Zenenn, sannkakunukunuki_base_move_y_d3_zenenn
+        ),
     )
     sankakkeiObject_3 = makeSannkakuNikunukiObject(
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u4_Zenenn, -0.20),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u5_Zenenn, -0.20),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d4_Zenenn, 0.20),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u4_Zenenn, sannkakunukunuki_base_move_y_u4_zenenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u5_Zenenn, sannkakunukunuki_base_move_y_u5_zenenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d4_Zenenn, sannkakunukunuki_base_move_y_d4_zenenn
+        ),
     )
     sankakkeiObject_4 = makeSannkakuNikunukiObject(
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u6_Zenenn, -0.20),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d5_Zenenn, 0.20),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d6_Zenenn, 0.20),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u6_Zenenn, sannkakunukunuki_base_move_y_u6_zenenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d5_Zenenn, sannkakunukunuki_base_move_y_d5_zenenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d6_Zenenn, sannkakunukunuki_base_move_y_d6_zenenn
+        ),
     )
     sankakkeiObject_5 = makeSannkakuNikunukiObject(
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u1_Kouenn, -0.25),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u2_Kouenn, -0.25),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d1_Kouenn, 0.30),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u1_Kouenn, sannkakunukunuki_base_move_y_u1_kouenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u2_Kouenn, sannkakunukunuki_base_move_y_u2_kouenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d1_Kouenn, sannkakunukunuki_base_move_y_d1_kouenn
+        ),
     )
     sankakkeiObject_6 = makeSannkakuNikunukiObject(
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u3_Kouenn, -0.25),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d2_Kouenn, 0.30),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d3_Kouenn, 0.30),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u3_Kouenn, sannkakunukunuki_base_move_y_u3_kouenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d2_Kouenn, sannkakunukunuki_base_move_y_d2_kouenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d3_Kouenn, sannkakunukunuki_base_move_y_d3_kouenn
+        ),
     )
     sankakkeiObject_7 = makeSannkakuNikunukiObject(
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u4_Kouenn, -0.25),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u5_Kouenn, -0.25),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d4_Kouenn, 0.30),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u4_Kouenn, sannkakunukunuki_base_move_y_u4_kouenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u5_Kouenn, sannkakunukunuki_base_move_y_u5_kouenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d4_Kouenn, sannkakunukunuki_base_move_y_d4_kouenn
+        ),
     )
     sankakkeiObject_8 = makeSannkakuNikunukiObject(
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d6_Kouenn, 0.30),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d5_Kouenn, 0.30),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u6_Kouenn, -0.25),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d6_Kouenn, sannkakunukunuki_base_move_y_d6_kouenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d5_Kouenn, sannkakunukunuki_base_move_y_d5_kouenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u6_Kouenn, sannkakunukunuki_base_move_y_u6_kouenn
+        ),
     )
     sankakkeiObject_9 = makeSannkakuNikunukiObject(
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_d7_Kouenn, 0.30),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u8_Kouenn, -0.50),
-        convertYokugennRateGaishuuyohakuToZahyou(nikunukiBasePoint_u7_Kouenn, -0.25),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_d7_Kouenn, sannkakunukunuki_base_move_y_d7_kouenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u8_Kouenn, sannkakunukunuki_base_move_y_u8_kouenn
+        ),
+        convertYokugennRateGaishuuyohakuToZahyou(
+            nikunukiBasePoint_u7_Kouenn, sannkakunukunuki_base_move_y_u7_kouenn
+        ),
     )
     makeSannkakuNinuki(file, sankakkeiObject_1)
     makeSannkakuNinuki(file, sankakkeiObject_2)
@@ -994,6 +1090,21 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     makeSannkakuNinuki(file, sankakkeiObject_7)
     makeSannkakuNinuki(file, sankakkeiObject_8)
     makeSannkakuNinuki(file, sankakkeiObject_9)
+
+    # half-Ribを利用する際の肉抜きについて（halfリブ出力の際のみ）
+    if use_half:
+        sannkakunikunuki_for_halfRib_kouenn = makeSannkakuNikunukiObject(
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_half_u1_Kouenn, sannkakunukunuki_base_move_y_u1_kouenn
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_half_u2_Kouenn, sannkakunukunuki_base_move_y_u2_kouenn
+            ),
+            convertYokugennRateGaishuuyohakuToZahyou(
+                nikunukiBasePoint_half_d1_Kouenn, sannkakunukunuki_base_move_y_d1_kouenn
+            ),
+        )
+        makeSannkakuNinuki(file, sannkakunikunuki_for_halfRib_kouenn)
 
     # halfRibの線を出力
     halfRibCutLine_d = findNearestPointBasedOnX(c * halfRibLine_d, RibCap_dPs)
