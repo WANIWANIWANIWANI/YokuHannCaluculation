@@ -26,10 +26,10 @@ crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
 # 読み取りファイルと書き出しファイルの設定a
 yokuNumber = "水平"  # 条件を
-readingFilePath = r"C:\Users\ryota2002\Documents\推定結果置き場\重量推定水平1015.xlsx"
+readingFilePath = r"C:\Users\ryota2002\Documents\2024決定版ファイル\確認0翼.xlsx"
 
 # リブ枚数
-numberOfRib = 23
+numberOfRib = 28
 
 
 # Excelファイルの取り込み
@@ -118,10 +118,17 @@ def ribCapWeight():
 
 
 def weightOfPlank():  # プランクの重量を求めるための関数　端リブのプランク長さを上辺、底辺、桁長さを高さ、厚みを持つ台形立体形として考える
-    plankVolume = (ribuTotalData[0][5] + ribuTotalData[0][9] / 2) + (
-        ribuTotalData[-1][5] + ribuTotalData[0][9] / 2
-    ) * ketaLengthFrangeinsideToFrangeInside * (1 / 2)
-    return plankVolume * sutairoDensity
+    plankVolume = 0
+    counter = 0
+    while counter < numberOfRib:
+        plankVolume += (
+            (ribuTotalData[counter][6] + ribuTotalData[counter + 1][6])
+            * (ketaLengthFrangeinsideToFrangeInside / (numberOfRib - 1))
+            * (ribuTotalData[counter][9])
+        )
+        print(plankVolume)
+        counter = counter + 1
+        return plankVolume * sutairoDensity
 
 
 def weightOfStringer():  # ストリンガーの重量を計算する
