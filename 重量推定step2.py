@@ -176,7 +176,7 @@ def weightOfRyoumennTeap():  # 両面テープの重量 ここについては、
     areaRyoumennTeap = 0  # 両面テープの面積を保持する変数
     for ribDate in ribuTotalData:
         ribRyoumennTeapArea = (ribDate[4] + ribDate[5]) * ribDate[8]  # リブの側面積
-        areaRyoumennTeap += ribRyoumennTeapArea
+        areaRyoumennTeap += ribRyoumennTeapArea + ribDate[5] * ribDate[8]
     ribteapHorizonalForYokugann = (
         lengthOfKeta
         * numberOfRyoumennteapForVerticalForYokugenn
