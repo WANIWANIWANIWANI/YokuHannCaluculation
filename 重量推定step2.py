@@ -22,7 +22,9 @@ NumberOfStringer = 7  # ストリンガーの本数
 lengthOfstringerSide1 = 5  # ストリンガーの一辺の長さ
 lengthOFStringerSide2 = 5  # ストリンガーの一辺の長さ
 densityOfFilm = 0.000011  # フィルムの密度（ｇ/mm³）
-crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
+crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）(スタイロコア材推定)
+kouennzaihokyouCarbonwidth = 10  # 後縁材に貼り付けるカーボン補強の厚み(mm)
+kouennzaihokyouCarbondencity = 0.20  # 後縁材に貼り付けるカーボン補強の密度（g/mm）
 
 # 読み取りファイルと書き出しファイルの設定a
 yokuNumber = "水平"  # 条件を
@@ -161,11 +163,17 @@ def filmWeight():  # フィルムの重量を計算する 端リブのプラン�
 
 
 def weightOfKoennzai():  # 後縁材の重量を求める
-    return (
+    weightOfSutairoCore = (
         densityOfKouennzai
         * ketaLengthFrangeinsideToFrangeInside
         * crosSectionalAreaKouennzai
     )
+    weightOfCarbon = (
+        kouennzaihokyouCarbondencity
+        * ketaLengthFrangeinsideToFrangeInside
+        * kouennzaihokyouCarbonwidth
+    )
+    return weightOfSutairoCore + weightOfCarbon
 
 
 def weightOf1Dstructure():
