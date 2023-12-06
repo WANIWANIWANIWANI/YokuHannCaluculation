@@ -21,17 +21,18 @@ ketaLengthFrangeinsideToFrangeInside = 3400  # 桁長さ
 NumberOfStringer = 7  # ストリンガーの本数
 lengthOfstringerSide1 = 5  # ストリンガーの一辺の長さ
 lengthOFStringerSide2 = 5  # ストリンガーの一辺の長さ
-densityOfFilm = 0.000001  # フィルムの密度（ｇ/mm³）
+densityOfFilm = 0.000011  # フィルムの密度（ｇ/mm³）
 crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）
 
 # 読み取りファイルと書き出しファイルの設定a
 yokuNumber = "水平"  # 条件を
-readingFilePath = r"C:\Users\ryota2002\Documents\2024決定版ファイル\確認0翼.xlsx"
+readingFilePath = r"C:\Users\ryota2002\Documents\libu\重量推定0翼.xlsx"
 
-# リブ枚数
-numberOfRib = 28
+# リブ枚数　この変数はリブ枚数-1になるので注意
+numberOfRib = 13
 
-
+# python上ではリストは0から
+numberOfRib = numberOfRib - 1
 # Excelファイルの取り込み
 filename = readingFilePath
 xlsdata = pd.read_excel(filename, sheet_name=0)
@@ -122,13 +123,13 @@ def weightOfPlank():  # プランクの重量を求めるための関数　端�
     counter = 0
     while counter < numberOfRib:
         plankVolume += (
-            (ribuTotalData[counter][6] + ribuTotalData[counter + 1][6])
+            (ribuTotalData[counter][5] + ribuTotalData[counter + 1][5])
             * (ketaLengthFrangeinsideToFrangeInside / (numberOfRib - 1))
             * (ribuTotalData[counter][9])
-        )
+        ) / 2
         print(plankVolume)
         counter = counter + 1
-        return plankVolume * sutairoDensity
+    return plankVolume * sutairoDensity
 
 
 def weightOfStringer():  # ストリンガーの重量を計算する
@@ -143,15 +144,20 @@ def weightOfStringer():  # ストリンガーの重量を計算する
 
 
 def filmWeight():  # フィルムの重量を計算する 端リブのプランク長さ＋リブキャップ長さを上辺と底辺に設定して、桁の長さを高さとする台形で近似
-    areaOfYoku = (
-        (
-            (ribuTotalData[0][4] + ribuTotalData[0][5])
-            + (ribuTotalData[-1][5] + ribuTotalData[-1][4])
-        )
-        * ketaLengthFrangeinsideToFrangeInside
-        / 2
-    )  # 翼表面積
-    return areaOfYoku * densityOfFilm
+    fileArea = 0
+    counter = 0
+    while counter < numberOfRib:
+        fileArea += (
+            (
+                ribuTotalData[counter][4]
+                + ribuTotalData[counter][5]
+                + ribuTotalData[counter + 1][4]
+                + ribuTotalData[counter + 1][5]
+            )
+            * (ketaLengthFrangeinsideToFrangeInside / (numberOfRib - 1))
+        ) / 2
+        counter = counter + 1
+    return fileArea * densityOfFilm
 
 
 def weightOfKoennzai():  # 後縁材の重量を求める
@@ -219,7 +225,7 @@ rateOfNikunuki = 1 - ribuTotalData[0][2] / ribuTotalData[0][0]
 df = pd.DataFrame(
     {
         "翼番号": [yokuNumber],
-        "スタイロ重量(g)": [totalWeightOfRib],
+        "リブ(g)": [totalWeightOfRib],
         "アセンブリ接着剤の重量(g)": [totalWeightOfRibFixingAroundKetaMawari],
         "端リブ補強材の重量(g)": [totalWeightOfRibTannribuHokyou],
         "後縁補強材の重量(g)": [totalWeightOfKouennHokyou],
