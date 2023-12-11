@@ -1,9 +1,15 @@
+####機体重量の推定計算式####
 import numpy as np
 
 
 ##ファイル関連
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
 Directory = r"C:\Users\ryota2002\Documents\その他"
+
+##翼重量の設定値
+maxWeightOf2DStructure = 8000
+minimumWeightOf2DStructure = 7800
+
 
 ##計算条件の設定
 maxLibKannkaku = 160
@@ -13,7 +19,7 @@ minPLankAtumi = 1.5
 bunnkatu = 100
 
 ##計算を行うパターン数
-caluculatePattern = 100
+caluculatePattern = 1000
 
 ## 計算を行う全翼の2次構造を定義する
 # 翼型
@@ -489,10 +495,12 @@ def generataPlankAtumiList(numberOfRib, plankAtumi):
 # 翼表面の変形を計算するための関数
 def caluculateYokuSurfaceDeviation(ribuInterval, plankAtumi):
     # リブ間とプランク厚みを0-1の数字へと変換する
-    standardizedRibKann = (ribuInterval - minLibKannaku) / (
-        maxLibKannkaku - minLibKannaku
+    standardizedRibKann = (ribuInterval - minLibKannaku + 0.000001) / (
+        maxLibKannkaku - minLibKannaku + 0.0000001
     )
-    standardizedPlank = (tp - minPLankAtumi) / (maxPLankAtumi - minPLankAtumi)
+    standardizedPlank = (tp - minPLankAtumi + 0.000001) / (
+        maxPLankAtumi - minPLankAtumi + 0.000001
+    )
 
     # 翼表面の変形量定数（(リブ間)^4/(プランク厚み)^3）
     return standardizedRibKann**4 / standardizedPlank**3
@@ -1413,14 +1421,43 @@ while counter < caluculatePattern:
         wingWeightList.append(totalWeightOf2Dstructure)
     yokuHennkei = caluculateYokuSurfaceDeviation(libSpan, tp)
     yoku2DStructureWight = sum(wingWeightList)
-    outPutList.append([yoku2DStructureWight, yokuHennkei[0], tp, libSpan[0]])
+    outPutList.append([yoku2DStructureWight, yokuHennkei[0], tp[0], libSpan[0]])
     print(counter)
-    if counter == 20:
-        print("20パターン終了")
-    elif counter == 40:
-        print("40パターン終了")
-    elif counter == 60:
-        print("60パターン終了")
 
 print("completed")
 print("計算結果:", outPutList)
+
+####得られた計算結果から設定した重量の範囲内にある計算結果を抜き出す####
+####x:リブ間,y:プランク厚み,z;翼の表面変形定数として図示####
+filteredPrediction = []
+visualizedRib = []
+visualizedPlank = []
+yokuHennkeiConst = []
+counter = 0
+for weightData in outPutList:
+    counter += 1
+    print(counter)
+    if (
+        weightData[0] < maxWeightOf2DStructure
+        and weightData[0] > minimumWeightOf2DStructure
+    ):
+        filteredPrediction.append(weightData)
+        visualizedRib.append(weightData[3])
+        visualizedPlank.append(weightData[2])
+        yokuHennkeiConst.append(weightData[1])
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from scipy.interpolate import griddata
+
+fig = plt.figure()
+ax = fig.add_subplot(projection="3d")
+x = np.array(visualizedRib)
+y = np.array(visualizedPlank)
+z = np.array(yokuHennkeiConst)
+
+print(x, y, z)
+ax.scatter(x, y, z, color="blue")
+plt.show()
