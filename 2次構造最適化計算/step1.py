@@ -4,11 +4,11 @@ import numpy as np
 
 ##ファイル関連
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
-Directory = r"C:\Users\ryota2002\Documents\その他"
+Directory = r"C:\Users\ryota2002\Documents\2024詩集版"
 
 ##翼重量の設定値
-maxWeightOf2DStructure = 8000
-minimumWeightOf2DStructure = 7800
+maxWeightOf2DStructure = 8200
+minimumWeightOf2DStructure = 8000
 
 
 ##計算条件の設定
@@ -18,32 +18,35 @@ maxPLankAtumi = 2.5
 minPLankAtumi = 1.5
 bunnkatu = 100
 
+# 計算結果の図示に関する設定値(この値よりも小さいもののみを出力)
+yokuHennkeiConstMax = 4.0
+
 ##計算を行うパターン数
-caluculatePattern = 1000
+caluculatePattern = 100
 
 ## 計算を行う全翼の2次構造を定義する
 # 翼型
 wing_shape = [
-    ["dae21.dat", "dae21.dat"],
-    ["dae21.dat", "dae21.dat"],
-    ["dae21.dat", "dae21.dat"],
-    ["dae21.dat", "dae21.dat"],
-    ["dae21.dat", "dae21.dat"],
-    ["dae21.dat", "dae21.dat"],
+    ["DAE-21.dat", "DAE-21.dat"],
+    ["DAE-21.dat", "DAE-21.dat"],
+    ["DAE-21.dat", "DAE-21.dat"],
+    ["DAE-21.dat", "DAE-21.dat"],
+    ["DAE-21.dat", "DAE-41.dat"],
+    ["DAE-41.dat", "DAE-41.dat"],
 ]
 # 翼弦[[0Root,0End],[],[]]の形式で記述
 wing_chood = [
     [1200, 1200],
     [1200, 1200],
-    [1100, 1100],
-    [1000, 1000],
-    [900, 900],
-    [800, 800],
+    [1200, 1056],
+    [1056, 908],
+    [908, 618],
+    [618, 400],
 ]
 # 桁長さ
-wing_pipe_length = [3000, 3000, 3000, 3000, 3000, 3000]
+wing_pipe_length = [1730, 3200, 3000, 3000, 2800, 2000]
 # 桁径
-wing_pipe = [100, 100, 100, 100, 100, 100]
+wing_pipe = [120, 110, 100, 89.75, 55, 34]
 
 ##複数の重量推定を行うためにリブ間とプランク厚みを変化させる
 LibSpanList = np.arange(minLibKannaku, maxLibKannkaku, 0.1)
@@ -123,12 +126,12 @@ nikunukiBasePoint_d7_Kouenn_YokuatuRate = 0.30
 
 ##各材料の密度情報
 # 各定数を以下で設定する（試作）
-ribFixKetaanaDensity = 0.007  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
-tannribuHokyouDensity = 0.00038  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
+ribFixKetaanaDensity = 0.0020  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
+tannribuHokyouDensity = 0  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
 ribCapDensity = 0.00038  # リブキャップの密度（g/リブキャップ１mm²）
 densityOfKouennzai = 0.0001294  # 後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
 densityOfStringer = 0.0001294  # ストリンガーの密度（ｇ/mm³） つまり、2024的にはバルサの密度を書けばよい
-densityOfRyoumennteap = 0.00040  # 両面テープの密度（g/mm2）
+densityOfRyoumennteap = 0.000040  # 両面テープの密度（g/mm2）
 
 # １次構造
 weightOfketa = 0  # 桁の重量(g)
@@ -136,10 +139,8 @@ weightOfFrange = 0  # フランジの重量
 weightOfKannzashi = 0  # かんざしの重量
 
 # 既知の値
-lengthOfKeta = 3400  # 桁の長さ
 numberOfRyoumennteapForVerticalForYokugenn = 7  # 翼弦に対して垂直な方向の両面テープ数
 sutairoDensity = 0.000031  # スタイロの密度(g/mm3)
-ketaLengthFrangeinsideToFrangeInside = 3400  # 桁長さ
 NumberOfStringer = 7  # ストリンガーの本数
 lengthOfstringerSide1 = 5  # ストリンガーの一辺の長さ
 lengthOFStringerSide2 = 5  # ストリンガーの一辺の長さ
@@ -529,7 +530,8 @@ while counter < caluculatePattern:
         # リブ枚数の計算
         n = round(wing_pipe_length[yokuNumber] / libSpan[0])
         numberOfRib = n
-        #
+        # 桁の長さを設定
+        ketaLengthFrangeinsideToFrangeInside = wing_pipe_length[yokuNumber]
         # 指定した翼の2次構造情報を設定する
         # 翼関連
         # 端、根の翼弦長(流れ方向)[mm]
@@ -1392,7 +1394,7 @@ while counter < caluculatePattern:
                 ribRyoumennTeapArea = (ribDate[4] + ribDate[5]) * ribDate[8]  # リブの側面積
                 areaRyoumennTeap += ribRyoumennTeapArea + ribDate[5] * ribDate[8]
             ribteapHorizonalForYokugann = (
-                lengthOfKeta
+                ketaLengthFrangeinsideToFrangeInside
                 * numberOfRyoumennteapForVerticalForYokugenn
                 * lengthOfstringerSide1
             )  # 桁に対して平行な両面テープ本数
@@ -1418,9 +1420,11 @@ while counter < caluculatePattern:
             + weightOfRyoumennTeap()
             + weightOfPlankEndHokyou()
         )
+        ##LR
+        wingWeightList.append(totalWeightOf2Dstructure)
         wingWeightList.append(totalWeightOf2Dstructure)
     yokuHennkei = caluculateYokuSurfaceDeviation(libSpan, tp)
-    yoku2DStructureWight = sum(wingWeightList)
+    yoku2DStructureWight = sum(wingWeightList) - wingWeightList[0]
     outPutList.append([yoku2DStructureWight, yokuHennkei[0], tp[0], libSpan[0]])
     print(counter)
 
@@ -1429,10 +1433,18 @@ print("計算結果:", outPutList)
 
 ####得られた計算結果から設定した重量の範囲内にある計算結果を抜き出す####
 ####x:リブ間,y:プランク厚み,z;翼の表面変形定数として図示####
+##機体重量でfilterを行う場合
 filteredPrediction = []
 visualizedRib = []
 visualizedPlank = []
 yokuHennkeiConst = []
+
+filteredPrediction_row = []
+visualizedRib_row = []
+visualizedPlank_row = []
+yokuHennkeiConst_row = []
+
+
 counter = 0
 for weightData in outPutList:
     counter += 1
@@ -1440,11 +1452,17 @@ for weightData in outPutList:
     if (
         weightData[0] < maxWeightOf2DStructure
         and weightData[0] > minimumWeightOf2DStructure
+        and weightData[1] < yokuHennkeiConstMax
     ):
         filteredPrediction.append(weightData)
         visualizedRib.append(weightData[3])
         visualizedPlank.append(weightData[2])
         yokuHennkeiConst.append(weightData[1])
+    else:
+        filteredPrediction_row.append(weightData)
+        visualizedRib_row.append(weightData[3])
+        visualizedPlank_row.append(weightData[2])
+        yokuHennkeiConst_row.append(weightData[1])
 
 
 import numpy as np
@@ -1457,7 +1475,5 @@ ax = fig.add_subplot(projection="3d")
 x = np.array(visualizedRib)
 y = np.array(visualizedPlank)
 z = np.array(yokuHennkeiConst)
-
-print(x, y, z)
 ax.scatter(x, y, z, color="blue")
 plt.show()
