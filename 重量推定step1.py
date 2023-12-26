@@ -78,9 +78,7 @@ startPointOfKouennHokyou_D = 80
 
 # 上面下面で同じ値を指定することは不可
 # 端リブ補強材上辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_U = 0.01
-# 端リブ強材下辺開始点(翼弦に対する％)
-startPointOfendRibHokyou_D = 0.02
+# とりあえず、桁穴よりも下の部分/2で概算している
 
 # 位置関連 halfRibの面積計算用
 # プランク上開始位置[%]
@@ -909,8 +907,8 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             KouennHokyou_D_Y.append(y_d[i])
 
     # 端リブ補強材を構成する点のリストを出六
-    x_stratPointOfEndRib_U = c * (startPointOfendRibHokyou_U / 100) * cos(sweep)
-    x_stratPointOfEndRib_D = c * (startPointOfendRibHokyou_D / 100) * cos(sweep)
+    x_stratPointOfEndRib_U = c * (RootR / 100) * cos(sweep)
+    x_stratPointOfEndRib_D = c * (RootR / 100) * cos(sweep)
 
     endRibHokyou_U_X = []  # 後縁補強材上側のｘ座標を保持する配列
     endRibHokyou_U_Y = []  # 後縁補強材上側のｙ座標を保持する配列
@@ -1036,30 +1034,31 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         areaHalflib_u = -integrate.trapz(endRibHokyou_U_Y, endRibHokyou_U_X)
         areaHalflib_d = integrate.trapz(endRibHokyou_D_Y, endRibHokyou_D_X)
         totalAreaIntegrateEndRib = areaHalflib_u + areaHalflib_d
-        ##足し引きして調整する部分の面積
-        # 翼上面の補強開始点と下面の補強開始点を結ぶ１次関数を求める
-        linearObject = makeLinearEquation(
-            x_stratPointOfEndRib_U,
-            x_stratPointOfEndRib_D,
-            endRibHokyou_U_X[0],
-            endRibHokyou_U_Y[0],
-        )
-        # 端リブの切り取り線と中心線の接点のｘ座標を求める
-        crossingCenterAndHalfRibCutline_x = -linearObject[1] / linearObject[0]
-        # 足し引きを行う面積を求める
-        subtrackAreaU = (
-            abs(endRibHokyou_U_X[-1] - crossingCenterAndHalfRibCutline_x)
-            * abs(endRibHokyou_U_Y[-1])
-            * (1 / 2)
-        )
-        addAreaD = abs(endRibHokyou_U_X[0] - crossingCenterAndHalfRibCutline_x) * abs(
-            endRibHokyou_U_Y[0]
-        )
-        # 端リブ補強材の面積
-        areaEndRibHokyou = totalAreaIntegrateEndRib - subtrackAreaU + addAreaD
+        return [totalAreaIntegrateEndRib / 2]
+        # ##足し引きして調整する部分の面積
+        # # 翼上面の補強開始点と下面の補強開始点を結ぶ１次関数を求める
+        # linearObject = makeLinearEquation(
+        #     x_stratPointOfEndRib_U,
+        #     x_stratPointOfEndRib_D,
+        #     endRibHokyou_U_X[0],
+        #     endRibHokyou_U_Y[0],
+        # )
+        # # 端リブの切り取り線と中心線の接点のｘ座標を求める
+        # crossingCenterAndHalfRibCutline_x = -linearObject[1] / linearObject[0]
+        # # 足し引きを行う面積を求める
+        # subtrackAreaU = (
+        #     abs(endRibHokyou_U_X[-1] - crossingCenterAndHalfRibCutline_x)
+        #     * abs(endRibHokyou_U_Y[-1])
+        #     * (1 / 2)
+        # )
+        # addAreaD = abs(endRibHokyou_U_X[0] - crossingCenterAndHalfRibCutline_x) * abs(
+        #     endRibHokyou_U_Y[0]
+        # )
+        # # 端リブ補強材の面積
+        # areaEndRibHokyou = totalAreaIntegrateEndRib - subtrackAreaU + addAreaD
 
-        print(totalAreaIntegrateEndRib, "積分範囲", subtrackAreaU, "引く面積", addAreaD, "足す面積")
-        return [areaEndRibHokyou, crossingCenterAndHalfRibCutline_x]
+        # print(totalAreaIntegrateEndRib, "積分範囲", subtrackAreaU, "引く面積", addAreaD, "足す面積")
+        # return [areaEndRibHokyou, crossingCenterAndHalfRibCutline_x]
 
     def caluculationOfAreaHalfRib():
         # halfRib切り取り線を決める２点を出力

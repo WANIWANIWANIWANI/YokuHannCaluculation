@@ -168,11 +168,7 @@ def weightOfKoennzai():  # 後縁材の重量を求める
         * ketaLengthFrangeinsideToFrangeInside
         * crosSectionalAreaKouennzai
     )
-    weightOfCarbon = (
-        kouennzaihokyouCarbondencity
-        * ketaLengthFrangeinsideToFrangeInside
-        * kouennzaihokyouCarbonwidth
-    )
+    weightOfCarbon = kouennzaihokyouCarbondencity * ketaLengthFrangeinsideToFrangeInside
     return weightOfSutairoCore + weightOfCarbon
 
 
