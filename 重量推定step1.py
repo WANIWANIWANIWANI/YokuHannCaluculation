@@ -12,13 +12,14 @@
 
 # ファイル関連
 # 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
-Directory = r"C:\Users\ryota2002\Documents\その他"
+Directory = r"C:\Users\ryota2002\Documents\2024詩集版"
 ProjectName = "aaa"
-exportFileName = "重量推定垂直1015.xlsx"
+exportFileName = "2024本番5翼.xlsx"
+
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
-RootChord = 800
-EndChord = 800
+RootChord = 618
+EndChord = 400
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 EndDelta = 0
@@ -26,10 +27,10 @@ EndDelta = 0
 RootR = 37
 EndR = 37
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "NACA-0009.dat"
-EndFoilName = "NACA-0009.dat"
+RootFoilName = "DAE-41.dat"
+EndFoilName = "DAE-41.dat"
 # リブ枚数
-n = 21
+n = 13
 # 何翼?
 PlaneNumber = "0"
 # 半リブあり?
@@ -37,22 +38,22 @@ use_half = False
 
 # リブ以外の要素関連
 # プランク厚さ[mm]
-tp = 2.7
+tp = 2.0
 # ストリンガー断面の一辺[mm]
 e = 5
 # リブキャップ厚さ[mm]
 t = 1
 # 桁径[mm]	楕円の短軸方向
 # 49.5
-d = 30
+d = 100
 # 桁径		楕円の長軸-短軸 円なら0
-dd = 30 - d
+dd = 100 - d
 # アセンブリ棒径[mm]
-da = 30
+da = 10
 # アセンブリ棒余白[mm]
 h = 7
 # 後縁材の前縁側の辺の長さ[mm]
-ht = 11
+ht = 8
 # 前縁材があるか boolean
 use_l = False
 # 前縁材の端線、水平線,offset線の出力
@@ -80,14 +81,14 @@ startPointOfKouennHokyou_D = 80
 # 端リブ補強材上辺開始点(翼弦に対する％)
 # とりあえず、桁穴よりも下の部分/2で概算している
 
-# 位置関連 halfRibの面積計算用
-# プランク上開始位置[%]
+# # 位置関連 halfRibの面積計算用
+# # プランク上開始位置[%]
 rpu = 60
-# プランク下開始位置[%] r plank downside
+# プランク下開始位置[%]
 rpd = EndR - 100 * (d / 2 + 30) / EndChord
-# ストリンガー下後縁側位置[%] r stringer downside trailing edge
+# ストリンガー下後縁側位置[%]
 rsdt = rpd + 20
-# ストリンガー前縁[mm] x stringer leading edge
+# ストリンガー前縁[mm]
 xsl = 20 + e
 
 # プランク端補強材の導入位置の設定
@@ -138,40 +139,43 @@ nikunukiBasePoint_d7_Kouenn = 65
 # y軸方向に対する座標指定(あるx座標に対応する翼厚に対する割合を入力（＋方向の移動は、＋０．＠＠、ー方向の移動は、ー０．＠＠で入力）)
 # 前縁側上面
 nikunukiBasePoint_u1_Zenenn_YokuatuRate = -0.50
-nikunukiBasePoint_u2_Zenenn_YokuatuRate = -0.20
-nikunukiBasePoint_u3_Zenenn_YokuatuRate = -0.20
-nikunukiBasePoint_u4_Zenenn_YokuatuRate = -0.20
-nikunukiBasePoint_u5_Zenenn_YokuatuRate = -0.20
-nikunukiBasePoint_u6_Zenenn_YokuatuRate = -0.20
+nikunukiBasePoint_u2_Zenenn_YokuatuRate = -0.15
+nikunukiBasePoint_u3_Zenenn_YokuatuRate = -0.15
+nikunukiBasePoint_u4_Zenenn_YokuatuRate = -0.15
+nikunukiBasePoint_u5_Zenenn_YokuatuRate = -0.15
+nikunukiBasePoint_u6_Zenenn_YokuatuRate = -0.15
 ##前縁側下面
-nikunukiBasePoint_d1_Zenenn_YokuatuRate = 0.20
-nikunukiBasePoint_d2_Zenenn_YokuatuRate = 0.20
-nikunukiBasePoint_d3_Zenenn_YokuatuRate = 0.20
-nikunukiBasePoint_d4_Zenenn_YokuatuRate = 0.20
-nikunukiBasePoint_d5_Zenenn_YokuatuRate = 0.20
-nikunukiBasePoint_d6_Zenenn_YokuatuRate = 0.20
+nikunukiBasePoint_d1_Zenenn_YokuatuRate = 0.15
+nikunukiBasePoint_d2_Zenenn_YokuatuRate = 0.15
+nikunukiBasePoint_d3_Zenenn_YokuatuRate = 0.15
+nikunukiBasePoint_d4_Zenenn_YokuatuRate = 0.15
+nikunukiBasePoint_d5_Zenenn_YokuatuRate = 0.15
+nikunukiBasePoint_d6_Zenenn_YokuatuRate = 0.15
 # 後縁側上面
-nikunukiBasePoint_u1_Kouenn_YokuatuRate = -0.25
-nikunukiBasePoint_u2_Kouenn_YokuatuRate = -0.25
-nikunukiBasePoint_u3_Kouenn_YokuatuRate = -0.25
-nikunukiBasePoint_u4_Kouenn_YokuatuRate = -0.25
-nikunukiBasePoint_u5_Kouenn_YokuatuRate = -0.25
-nikunukiBasePoint_u6_Kouenn_YokuatuRate = -0.25
-nikunukiBasePoint_u7_Kouenn_YokuatuRate = -0.25
+nikunukiBasePoint_u1_Kouenn_YokuatuRate = -0.20
+nikunukiBasePoint_u2_Kouenn_YokuatuRate = -0.20
+nikunukiBasePoint_u3_Kouenn_YokuatuRate = -0.20
+nikunukiBasePoint_u4_Kouenn_YokuatuRate = -0.20
+nikunukiBasePoint_u5_Kouenn_YokuatuRate = -0.20
+nikunukiBasePoint_u6_Kouenn_YokuatuRate = -0.20
+nikunukiBasePoint_u7_Kouenn_YokuatuRate = -0.20
 nikunukiBasePoint_u8_Kouenn_YokuatuRate = -0.50
 # 後縁側下面
-nikunukiBasePoint_d1_Kouenn_YokuatuRate = 0.30
-nikunukiBasePoint_d2_Kouenn_YokuatuRate = 0.30
-nikunukiBasePoint_d3_Kouenn_YokuatuRate = 0.30
-nikunukiBasePoint_d4_Kouenn_YokuatuRate = 0.30
-nikunukiBasePoint_d5_Kouenn_YokuatuRate = 0.30
-nikunukiBasePoint_d6_Kouenn_YokuatuRate = 0.30
-nikunukiBasePoint_d7_Kouenn_YokuatuRate = 0.30
+nikunukiBasePoint_d1_Kouenn_YokuatuRate = 0.20
+nikunukiBasePoint_d2_Kouenn_YokuatuRate = 0.20
+nikunukiBasePoint_d3_Kouenn_YokuatuRate = 0.20
+nikunukiBasePoint_d4_Kouenn_YokuatuRate = 0.20
+nikunukiBasePoint_d5_Kouenn_YokuatuRate = 0.20
+nikunukiBasePoint_d6_Kouenn_YokuatuRate = 0.20
+nikunukiBasePoint_d7_Kouenn_YokuatuRate = 0.20
 # 機体諸元
 # 0翼取り付け角[°](定常飛行迎角)
 alpha = 0
 # 後退角(リブ厚みの修正用)[°]
 sweep = 0
+
+# 分割数の設定
+bunnkatu = 100
 
 
 # 設定おわり
@@ -710,7 +714,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     f_uRoot = inter(RootFoilDataU_x[::-1] * c * cos(sweep), RootFoilDataU_y[::-1] * c)
     f_dRoot = inter(RootFoilDataD_x * c * cos(sweep), RootFoilDataD_y * c)
     # x座標の列を端と同じにする
-    s = numpy.linspace(0, 1, 200)
+    s = numpy.linspace(0, 1, bunnkatu)
     x_d = numpy.delete(
         numpy.cos(numpy.pi * (s - 1) / 2) ** 2 * c * cos(sweep), 1
     )  # 再前縁から2番目の点があると不安定になることを防ぐ
@@ -734,8 +738,12 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     del s
 
     # 中心線の関数、点のリスト
-    s = numpy.linspace(0, x_d[-1], 50)  # 端で定義域を狭くするのは計算誤差でf_uの定義域を超えないため。
-    f_camber = inter(s, (f_u(s) + f_d(s)) / 2)  # 上下の翼型の関数の平均であると近似 特に前縁付近は信用できない
+    s = numpy.linspace(
+        0, x_d[-1], 50
+    )  # 端で定義域を狭くするのは計算誤差でf_uの定義域を超えないため。
+    f_camber = inter(
+        s, (f_u(s) + f_d(s)) / 2
+    )  # 上下の翼型の関数の平均であると近似 特に前縁付近は信用できない
     CamberPs = to_vectors2(s, f_camber(s))
     del s
 
@@ -1010,7 +1018,9 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
                 plank_u_ToNonVec.append(addition_array_PlankU_nonVec)
             if additional_array_PlankD_nonVec[0] <= x_plank_d:
                 plank_d_ToNonVec.append(additional_array_PlankD_nonVec)
-        for i in range(len(plank_u_ToNonVec) - 1):  # 隣り合う２点間の距離を足し合わせて曲線の長さとした
+        for i in range(
+            len(plank_u_ToNonVec) - 1
+        ):  # 隣り合う２点間の距離を足し合わせて曲線の長さとした
             discussP1_u = plank_u_ToNonVec[i]
             discussP2_u = plank_u_ToNonVec[i + 1]
             lengthOfP1P2_u = (
@@ -1033,7 +1043,8 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
         ##積分面積を保持(翼弦を積分軸にして積分の実行)
         areaHalflib_u = -integrate.trapz(endRibHokyou_U_Y, endRibHokyou_U_X)
         areaHalflib_d = integrate.trapz(endRibHokyou_D_Y, endRibHokyou_D_X)
-        totalAreaIntegrateEndRib = areaHalflib_u + areaHalflib_d
+        print(areaHalflib_u, areaHalflib_d)
+        totalAreaIntegrateEndRib = areaHalflib_u - areaHalflib_d
         return [totalAreaIntegrateEndRib / 2]
         # ##足し引きして調整する部分の面積
         # # 翼上面の補強開始点と下面の補強開始点を結ぶ１次関数を求める
@@ -1074,15 +1085,21 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             x_d == nearestPointOfHalfRibCut_d_x
         )
         if len(crossingCenterAndHalfRibCutline_x_index_array_in_x_d) > 2:
-            print("error;halfRibの切り取り線が1つに決まりません.errorを解消してください")
+            print(
+                "error;halfRibの切り取り線が1つに決まりません.errorを解消してください"
+            )
         # リブ下面切り取り点のｙ座標
         nearestPointOfHalfRibCut_d_y = y_d[
             crossingCenterAndHalfRibCutline_x_index_array_in_x_d[0]
         ]
         ##翼弦に対して積分を行う
-        plank_u_ToNonVec_x = []  # プランク上のx座標の集合 xの値が大きいものから順番に配列の中に存在
+        plank_u_ToNonVec_x = (
+            []
+        )  # プランク上のx座標の集合 xの値が大きいものから順番に配列の中に存在
         plank_u_ToNonVec_y = []  # プランク上のｙ座標の集合
-        plank_d_ToNonVec_x = []  # プランク下のx座標の集合　ｘの値が小さいモノから順の配列に存在
+        plank_d_ToNonVec_x = (
+            []
+        )  # プランク下のx座標の集合　ｘの値が小さいモノから順の配列に存在
         plank_d_ToNonVec_y = []  # 　プランク下のy座標の集合
         for i in range(len(x_u)):  # 上記のリストへ
             if x_u[i] < x_plank_u:
@@ -1139,7 +1156,9 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
                 ribCap_u_ToNonVec.append(addition_array_ribCapU_nonVec)
             if additional_array_ribCapD_nonVec[0] >= x_plank_d:
                 ribCap_d_ToNonVec.append(additional_array_ribCapD_nonVec)
-        for i in range(len(ribCap_u_ToNonVec) - 1):  # 隣り合う２点間の距離を足し合わせて曲線の長さとした
+        for i in range(
+            len(ribCap_u_ToNonVec) - 1
+        ):  # 隣り合う２点間の距離を足し合わせて曲線の長さとした
             discussP1_u = ribCap_u_ToNonVec[i]
             discussP2_u = ribCap_u_ToNonVec[i + 1]
             lengthOfP1P2_u = (
@@ -1339,7 +1358,9 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
 
     # 計算値まとめ
     areayokuGata = caluculateOfareaYokugata()  # 肉抜きをしないときのリブ面積
-    totalAreaOfNikunuki = caluculateTorasuNikunuki(sannkakuObjectList)  # 肉抜き面積の合計
+    totalAreaOfNikunuki = caluculateTorasuNikunuki(
+        sannkakuObjectList
+    )  # 肉抜き面積の合計
     areaHalfRib = caluculationOfAreaHalfRib()  # halfRibの面積
     areaKetaana = areaKetaana()  # 桁穴の面積
     areaTotalRibu = areayokuGata - totalAreaOfNikunuki - areaKetaana  # 最終的なリブ面積

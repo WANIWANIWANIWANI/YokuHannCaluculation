@@ -12,33 +12,33 @@
 
 # ファイル関連
 # 出力するテキストファイルの名前。拡張子は不要
-ProjectName = "tesetForHalfRib"
-# 翼型を保管しておき、コマンドファイルを出力するディレクトリのPath
-Directory = r"C:\Users\ryota2002\Documents\2024決定版ファイル"
+ProjectName = "垂直下側"
+# 翼型を保管しておき、コマンドファイルを出2024詩集版力するディレクトリのPath
+Directory = r"C:\Users\ryota2002\Documents\2024確定版\リブ図面"
 
 # 翼関連
 # 端、根の翼弦長(流れ方向)[mm]
-RootChord = 738
-EndChord = 1056
+RootChord = 984
+EndChord = 870
 # 端、根のねじり上げ(流れ方向)[°]
 RootDelta = 0
 EndDelta = 0
 # 端、根の桁位置[%]
-RootR = 37
-EndR = 37
+RootR = 25
+EndR = 25
 # 端、根の翼型のファイル名 datファイルを入れる
-RootFoilName = "DAE-21.dat"
-EndFoilName = "DAE-21.dat"
+RootFoilName = "SD8020.dat"
+EndFoilName = "SD8020.dat"
 # リブ枚数(1つの翼に立てる枚数)
-n = 3
+n = 5
 # 分割してリブを出力
 isUseBunkatuShuturyoku = False
 startRib = 11  # 何枚目から出力を行うか
 endRib = 13  # 何枚目まで出力するか
 # 何翼?
-PlaneNumber = "水平尾翼"
+PlaneNumber = "0"
 # 半リブあり?
-use_half = True
+use_half = False
 
 # 上反角を付けるために桁をy軸方向へ移動させるか？
 use_JouhannkakuChousei = False
@@ -47,23 +47,23 @@ y_chousei = [0, 1, 2]
 
 # リブ以外の要素関連
 # プランク厚さ[mm]
-tp = 2.7
+tp = 3
 # ストリンガー断面の一辺[mm](翼弦垂直方向)
 e = 5
 # ストリンガー断面の１辺[mm](翼弦平行方向)
 e1 = 5.5
 # リブキャップ厚さ[mm]
-t = 0.1
+t = 0.3
 # 桁径[mm]	楕円の短軸方向
-d = 101.388
+d = 31.388
 # 桁径		楕円の長軸-短軸 円なら0
-dd = 101.832 - d
+dd = 31.388 - d
 # アセンブリ棒径[mm]
 da = 30  # 元は30
 # アセンブリ棒余白[mm]
 h = 7
 # 後縁材の前縁側の辺の長さ[mm]
-ht = 10  # 元は8
+ht = 8  # 元は8
 # 前縁材があるか boolean
 use_l = False
 # 前縁材の端線、水平線,offset線の出力
@@ -82,24 +82,54 @@ first_light_r = 10
 w_circle = 15
 
 # 位置関連
-# プランク上開始位置[%]
-rpu = 60
+# 主翼用設定値
+# # # プランク上開始位置[%]
+# rpu = 60
+# # プランク下開始位置[%] r plank downside
+# rpd = EndR - 100 * (d / 2 + 30) / EndChord
+
+# # 尾翼用設定値
+rpu = 30
 # プランク下開始位置[%] r plank downside
-rpd = EndR - 100 * (d / 2 + 30) / EndChord
+rpd = 30
+
 # ストリンガー下後縁側位置[%] r stringer downside trailing edge #半リブの切り取り線に依存
 rsdt = rpd + 20
 # ストリンガー前縁[mm] x stringer leading edge
 xsl = 20 + e
 
 # 設定値はあざみ野の翼を参考にしている
+
+# 主翼0-4翼設定値
+# # ストリンガー位置翼上部[%]
+# stringerU1Rate = 4
+# stringerU2Rate = 10
+# stringerU3Rate = 57
+# # ストリンガー位置翼下部[%]
+# stringerD1Rate = 2
+# stringerD2Rate = 6
+# stringerD3Rate = rpd - 3
+
+# # 尾翼用
 # ストリンガー位置翼上部[%]
 stringerU1Rate = 4
 stringerU2Rate = 10
-stringerU3Rate = 57
+stringerU3Rate = 65
 # ストリンガー位置翼下部[%]
-stringerD1Rate = 2
-stringerD2Rate = 6
-stringerD3Rate = rpd - 3
+stringerD1Rate = 4
+stringerD2Rate = 10
+stringerD3Rate = 65
+
+# # 5翼用
+# # 設定値はあざみ野の翼を参考にしている
+# # ストリンガー位置翼上部[%]
+# stringerU1Rate = 6
+# stringerU2Rate = 53
+# stringerU3Rate = 99
+# # ストリンガー位置翼下部[%]
+# stringerD1Rate = 6
+# stringerD2Rate = 99
+# stringerD3Rate = 20.5
 
 # トラス肉抜きを行うための基準点を指定する(翼現に対する％表示で設定を行う)
 # 前縁側上面
@@ -117,7 +147,8 @@ nikunukiBasePoint_d4_Zenenn = 20.5
 nikunukiBasePoint_d5_Zenenn = 22.5
 nikunukiBasePoint_d6_Zenenn = 31.5
 # 後縁側上面
-nikunukiBasePoint_u1_Kouenn = 42.5
+# 後縁側d1が動く設定になっている
+nikunukiBasePoint_u1_Kouenn = 43
 nikunukiBasePoint_u2_Kouenn = 50.5
 nikunukiBasePoint_u3_Kouenn = 52.5
 nikunukiBasePoint_u4_Kouenn = 54.5
@@ -126,8 +157,8 @@ nikunukiBasePoint_u6_Kouenn = 61.5
 nikunukiBasePoint_u7_Kouenn = 63.5
 nikunukiBasePoint_u8_Kouenn = 68
 # 後縁側下面
-nikunukiBasePoint_d1_Kouenn = 46.5
-nikunukiBasePoint_d2_Kouenn = 48.5
+nikunukiBasePoint_d1_Kouenn = 47.5
+nikunukiBasePoint_d2_Kouenn = 49
 nikunukiBasePoint_d3_Kouenn = 54.5
 nikunukiBasePoint_d4_Kouenn = 56.5
 nikunukiBasePoint_d5_Kouenn = 58.5
@@ -167,13 +198,13 @@ sannkakunukunuki_base_move_y_d7_kouenn = 0.30
 
 
 # ハーフリブを利用する際の肉抜き
-nikunukiBasePoint_half_u1_Kouenn = 55
-nikunukiBasePoint_half_u2_Kouenn = 67
-nikunukiBasePoint_half_d1_Kouenn = 60
+nikunukiBasePoint_half_u1_Kouenn_half = 46
+nikunukiBasePoint_half_u2_Kouenn_half = 55.5
+nikunukiBasePoint_half_d1_Kouenn_half = 43
 # 各肉抜き点のy座標方向の移動
-sannkakunukunuki_base_move_y_u1_kouenn = 0.30
-sannkakunukunuki_base_move_y_u2_kouenn = -0.25
-sannkakunukunuki_base_move_y_d1_kouenn = -0.25
+sannkakunukunuki_base_move_y_u1_kouenn_half = -0.15
+sannkakunukunuki_base_move_y_u2_kouenn_half = -0.15
+sannkakunukunuki_base_move_y_d1_kouenn_half = 0.32
 
 
 # halfRibの切り取り線
@@ -181,12 +212,12 @@ halfRibLine_d = 0.375
 
 ##リブガキの際の分割数を指定
 # 基本は200、数が大きいほど精密なリブが書けるが大きくし過ぎるとエラー
-bunnkatyu = 150
+bunnkatyu = 200
 
 
 # 機体諸元
 # 0翼取り付け角[°]
-alpha = 4.2
+alpha = 0
 # 後退角(リブ厚みの修正用)[°]
 sweep = 0
 
@@ -316,7 +347,9 @@ class stringer:
     @property
     def D(self):
         ABVec_e = self.AB / abs(self.AB)
-        ABVecForLineAD = ABVec_e * e1  # ABベクトルの長さをe1へ、これを回転させてADベクトルを作る
+        ABVecForLineAD = (
+            ABVec_e * e1
+        )  # ABベクトルの長さをe1へ、これを回転させてADベクトルを作る
         if not self.R:
             return self.A + ABVecForLineAD.i
         else:
@@ -719,8 +752,12 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     del s
 
     # 中心線の関数、点のリスト
-    s = numpy.linspace(0, x_d[-1], 50)  # 端で定義域を狭くするのは計算誤差でf_uの定義域を超えないため。
-    f_camber = inter(s, (f_u(s) + f_d(s)) / 2)  # 上下の翼型の関数の平均であると近似 特に前縁付近は信用できない
+    s = numpy.linspace(
+        0, x_d[-1], 50
+    )  # 端で定義域を狭くするのは計算誤差でf_uの定義域を超えないため。
+    f_camber = inter(
+        s, (f_u(s) + f_d(s)) / 2
+    )  # 上下の翼型の関数の平均であると近似 特に前縁付近は信用できない
     CamberPs = to_vectors2(s, f_camber(s))
     del s
 
@@ -767,15 +804,29 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     ][
         -2:
     ]  # StringerDT.Aを挟む点
+
+    EdgeDU = [
+        RibCap_uPs[i]
+        for i in range(1, len(RibCap_uPs))
+        if RibCap_uPs[i - 1].x <= x_stringer_dt
+    ][-2:]
+
     StringerDT = stringer(
         div_P(EdgeDT[0], EdgeDT[1], x_stringer_dt, 0), EdgeDT[0], e, R=True
     )  # trailing edge
+
+    # StringerDU = stringer(
+    #     div_P(EdgeDU[0], EdgeDU[1], x_stringer_dt, 0), EdgeDU[0], e, R=False
+    # )
 
     stringerDT_vec = [
         RibCap_dPs[i]
         for i in range(1, len(RibCap_dPs))
         if RibCap_dPs[i - 1].x <= x_stringer_dt
     ][-2:]
+    # stringerDU_vec=[
+
+    # ]
     stringerU1 = [
         PlankPsU[i]
         for i in range(1, len(PlankPsU))
@@ -832,7 +883,9 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
 
     # プランク線pipe.bの端を切り取る
     del PlankPs[0], PlankPs[-1]
-    PlankPs = [StringerU.A] + PlankPs + [StringerDL.A]  # 端点をストリンガーの頂点と一致させる。
+    PlankPs = (
+        [StringerU.A] + PlankPs + [StringerDL.A]
+    )  # 端点をストリンガーの頂点と一致させる。
 
     # 上反角の調整用関数
     def calucaulateYokuaAtumi(x):
@@ -1095,13 +1148,16 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     if use_half:
         sannkakunikunuki_for_halfRib_kouenn = makeSannkakuNikunukiObject(
             convertYokugennRateGaishuuyohakuToZahyou(
-                nikunukiBasePoint_half_u1_Kouenn, sannkakunukunuki_base_move_y_u1_kouenn
+                nikunukiBasePoint_half_u1_Kouenn_half,
+                sannkakunukunuki_base_move_y_u1_kouenn_half,
             ),
             convertYokugennRateGaishuuyohakuToZahyou(
-                nikunukiBasePoint_half_u2_Kouenn, sannkakunukunuki_base_move_y_u2_kouenn
+                nikunukiBasePoint_half_u2_Kouenn_half,
+                sannkakunukunuki_base_move_y_u2_kouenn_half,
             ),
             convertYokugennRateGaishuuyohakuToZahyou(
-                nikunukiBasePoint_half_d1_Kouenn, sannkakunukunuki_base_move_y_d1_kouenn
+                nikunukiBasePoint_half_d1_Kouenn_half,
+                sannkakunukunuki_base_move_y_d1_kouenn_half,
             ),
         )
         makeSannkakuNinuki(file, sannkakunikunuki_for_halfRib_kouenn)
@@ -1127,6 +1183,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
     # ストリンガー出力 切るので黒
     color(file, 0, 0, 0)
     WriteStringer(file, StringerDT, O)
+    # WriteStringer(file, StringerDU, O)
     WriteStringer(file, stringerU1ToVec, O)
     WriteStringer(file, stringerU2ToVec, O)
     WriteStringer(file, stringerU3ToVec, O)

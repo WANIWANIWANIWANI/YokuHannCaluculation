@@ -12,9 +12,9 @@ minimumWeightOf2DStructure = 8000
 
 
 ##計算条件の設定
-maxLibKannkaku = 160
-minLibKannaku = 120
-maxPLankAtumi = 2.5
+maxLibKannkaku = 170
+minLibKannaku = 140
+maxPLankAtumi = 3.0
 minPLankAtumi = 1.5
 bunnkatu = 100
 
@@ -22,7 +22,7 @@ bunnkatu = 100
 yokuHennkeiConstMax = 4.0
 
 ##計算を行うパターン数
-caluculatePattern = 100
+caluculatePattern = 4000
 
 ## 計算を行う全翼の2次構造を定義する
 # 翼型
@@ -126,17 +126,14 @@ nikunukiBasePoint_d7_Kouenn_YokuatuRate = 0.30
 
 ##各材料の密度情報
 # 各定数を以下で設定する（試作）
-ribFixKetaanaDensity = 0.0020  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
-tannribuHokyouDensity = 0  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
+ribFixKetaanaDensity = 0.0030  # 桁穴周りの接着剤の密度（g/(桁穴1mm)
+tannribuHokyouDensity = 0.00022  # 端リブ補強材（バルサ＋ボンド）の密度（g / mm²）
 ribCapDensity = 0.00038  # リブキャップの密度（g/リブキャップ１mm²）
-densityOfKouennzai = 0.0001294  # 後縁材の値を求める（g/mm³） つまり、2024的にはバルサの密度を書けばよい
+densityOfKouennzai = 0.000031  # 後縁材のコア材の密度を求める（g/mm³）
+kouennzaihokyouCarbondencity = 0.0167  # 後縁材に貼り付けるカーボン補強の密度（g/mm）
 densityOfStringer = 0.0001294  # ストリンガーの密度（ｇ/mm³） つまり、2024的にはバルサの密度を書けばよい
-densityOfRyoumennteap = 0.000040  # 両面テープの密度（g/mm2）
+densityOfRyoumennteap = 0.00014  # 両面テープの密度（g/mm2）
 
-# １次構造
-weightOfketa = 0  # 桁の重量(g)
-weightOfFrange = 0  # フランジの重量
-weightOfKannzashi = 0  # かんざしの重量
 
 # 既知の値
 numberOfRyoumennteapForVerticalForYokugenn = 7  # 翼弦に対して垂直な方向の両面テープ数
@@ -147,7 +144,6 @@ lengthOFStringerSide2 = 5  # ストリンガーの一辺の長さ
 densityOfFilm = 0.000011  # フィルムの密度（ｇ/mm³）
 crosSectionalAreaKouennzai = 200  # 後縁材の断面積（mm²）(スタイロコア材推定)
 kouennzaihokyouCarbonwidth = 10  # 後縁材に貼り付けるカーボン補強の厚み(mm)
-kouennzaihokyouCarbondencity = 0.0020  # 後縁材に貼り付けるカーボン補強の密度（g/mm）
 
 
 ##不要な設定値
@@ -889,7 +885,7 @@ while counter < caluculatePattern:
             def caluculationOfAreaEndRibHokyou():
                 areaHalflib_u = -integrate.trapz(endRibHokyou_U_Y, endRibHokyou_U_X)
                 areaHalflib_d = integrate.trapz(endRibHokyou_D_Y, endRibHokyou_D_X)
-                totalAreaIntegrateEndRib = areaHalflib_u + areaHalflib_d
+                totalAreaIntegrateEndRib = areaHalflib_u - areaHalflib_d
                 return [totalAreaIntegrateEndRib / 2]
 
             # def caluculationOfAreaEndRibHokyou():
@@ -1276,7 +1272,6 @@ while counter < caluculatePattern:
         # ribuTotalData[]にexcelから読みっとたデータが２次元配列で保持
         # 具体的には,
         # 肉抜き前リブ面積、半リブ面積の合計、最終的なリブ面積、桁穴周、リブキャップ長さ、プランク長さ、後縁補強材の面積、リブの種類（0:肉抜き無、１肉抜きアリ、２半リブ）、リブの厚み、プランク厚み,端リブ補強材面積(肉抜き無),プランク端補強材の面積の順
-
         def ribuWeight():  # リブのスタイロの部分の重量
             totalVolumeOfRib = 0  # リブの体積を保持する
             for ribData in ribuTotalData:  # リブの体積を計算する
@@ -1383,14 +1378,9 @@ while counter < caluculatePattern:
                 * crosSectionalAreaKouennzai
             )
             weightOfCarbon = (
-                kouennzaihokyouCarbondencity
-                * ketaLengthFrangeinsideToFrangeInside
-                * kouennzaihokyouCarbonwidth
+                kouennzaihokyouCarbondencity * ketaLengthFrangeinsideToFrangeInside
             )
             return weightOfSutairoCore + weightOfCarbon
-
-        def weightOf1Dstructure():
-            return weightOfketa + weightOfFrange + weightOfKannzashi
 
         def weightOfRyoumennTeap():  # 両面テープの重量 ここについては、両面テープをはる位置によって要修正
             areaRyoumennTeap = 0  # 両面テープの面積を保持する変数
@@ -1424,11 +1414,45 @@ while counter < caluculatePattern:
             + weightOfRyoumennTeap()
             + weightOfPlankEndHokyou()
         )
+        # print(
+        #     "リブ",
+        #     ribuWeight(),
+        #     "アセンブリ接着剤",
+        #     ribuFixWeight(),
+        #     "端リブ補強",
+        #     tannRibuHokyou(),
+        #     "リブキャップ",
+        #     ribCapWeight(),
+        #     "ストリンガー",
+        #     weightOfStringer(),
+        #     "プランク",
+        #     weightOfPlank(),
+        #     "フィルム",
+        #     filmWeight(),
+        #     "後縁材",
+        #     weightOfKoennzai(),
+        #     "両面テープ",
+        #     weightOfRyoumennTeap(),
+        #     "プランク端補強",
+        #     weightOfPlankEndHokyou(),
+        #     "total",
+        #     ribuWeight()
+        #     + ribuFixWeight()
+        #     + tannRibuHokyou()
+        #     + ribCapWeight()
+        #     + weightOfStringer()
+        #     + weightOfPlank()
+        #     + filmWeight()
+        #     + weightOfKoennzai()
+        #     + weightOfRyoumennTeap()
+        #     + weightOfPlankEndHokyou(),
+        # )
         ##LR
         wingWeightList.append(totalWeightOf2Dstructure)
         wingWeightList.append(totalWeightOf2Dstructure)
     yokuHennkei = caluculateYokuSurfaceDeviation(libSpan, tp)
     yoku2DStructureWight = sum(wingWeightList) - wingWeightList[0]
+    # 部品ごとの合計重量を求める
     outPutList.append([yoku2DStructureWight, yokuHennkei[0], tp[0], libSpan[0]])
     print(counter)
 
