@@ -401,6 +401,7 @@ class nikunuki:
         )
 
         self.nikunukiObject = {
+            # スプラインの端点＋三角形の頂点
             "p1": nikunukiBasePoint1Vector,
             "p2": nikunukiBasePoint2Vector,
             "p3": nikunukiBasePoint3Vector,
@@ -410,6 +411,25 @@ class nikunuki:
             "p3Spline": nikunukiBasePoint1Vector + vactor31 * (1 - splineRate),
             "p2Spline_sub": nikunukiBasePoint3Vector + vactor23 * (1 - splineRate),
             "p3Spline_sub": nikunukiBasePoint3Vector + vactor23 * (splineRate),
+            ##ここから滑らかなスプラインを書くための基準点
+            "p1Spline_mid1": nikunukiBasePoint2Vector + vactor12 * (1 - splineRate / 3),
+            "p1Spline_sub_mid1": nikunukiBasePoint1Vector + vactor31 * splineRate / 3,
+            "p2Spline_mid1": nikunukiBasePoint2Vector + vactor12 * splineRate / 3,
+            "p2Spline_sub_mid1": nikunukiBasePoint3Vector
+            + vactor23 * (1 - splineRate / 3),
+            "p3Spline_mid1": nikunukiBasePoint1Vector + vactor31 * (1 - splineRate / 3),
+            "p3Spline_sub_mid1": nikunukiBasePoint3Vector + vactor23 * (splineRate / 3),
+            "p1Spline_mid2": nikunukiBasePoint2Vector
+            + vactor12 * (1 - splineRate * 2 / 3),
+            "p1Spline_sub_mid2": nikunukiBasePoint1Vector
+            + vactor31 * splineRate * 2 / 3,
+            "p2Spline_mid2": nikunukiBasePoint2Vector + vactor12 * splineRate * 2 / 3,
+            "p2Spline_sub_mid2": nikunukiBasePoint3Vector
+            + vactor23 * (1 - splineRate * 2 / 3),
+            "p3Spline_mid2": nikunukiBasePoint1Vector
+            + vactor31 * (1 - splineRate * 2 / 3),
+            "p3Spline_sub_mid2": nikunukiBasePoint3Vector
+            + vactor23 * (splineRate * 2 / 3),
         }
 
 
@@ -664,17 +684,29 @@ def makeNikunuki(file, O, NikunukiObject):
     print(NikunukiObject)
     splineArray1 = [
         NikunukiObject["p1Spline"],
+        NikunukiObject["p1Spline_mid2"],
+        NikunukiObject["p1Spline_mid1"],
         NikunukiObject["p1"],
+        NikunukiObject["p1Spline_sub_mid1"],
+        NikunukiObject["p1Spline_sub_mid2"],
         NikunukiObject["p1Spline_sub"],
     ]
     splineArray2 = [
         NikunukiObject["p2Spline"],
+        NikunukiObject["p2Spline_mid2"],
+        NikunukiObject["p2Spline_mid1"],
         NikunukiObject["p2"],
+        NikunukiObject["p2Spline_sub_mid1"],
+        NikunukiObject["p2Spline_sub_mid2"],
         NikunukiObject["p2Spline_sub"],
     ]
     splineArray3 = [
         NikunukiObject["p3Spline"],
+        NikunukiObject["p3Spline_mid2"],
+        NikunukiObject["p3Spline_mid1"],
         NikunukiObject["p3"],
+        NikunukiObject["p3Spline_sub_mid1"],
+        NikunukiObject["p3Spline_sub_mid2"],
         NikunukiObject["p3Spline_sub"],
     ]
     # AutoCadのスクリプトファイルを作成
@@ -1217,7 +1249,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             nikunukiBasePoint_u1_Zenenn,
             nikunukiBasePoint_u2_Zenenn,
             nikunukiBasePoint_d1_Zenenn,
-            0.20,
+            0.40,
         ).nikunukiObject,
     )
 
