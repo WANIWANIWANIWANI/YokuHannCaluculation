@@ -404,12 +404,12 @@ class nikunuki:
             "p1": nikunukiBasePoint1Vector,
             "p2": nikunukiBasePoint2Vector,
             "p3": nikunukiBasePoint3Vector,
-            "p1Spline": nikunukiBasePoint2Vector + vactor12 * splineRate,
-            "p2Spline": nikunukiBasePoint2Vector + vactor12 * (1 - splineRate),
+            "p1Spline": nikunukiBasePoint2Vector + vactor12 * (1 - splineRate),
+            "p2Spline": nikunukiBasePoint2Vector + vactor12 * splineRate,
             "p1Spline_sub": nikunukiBasePoint1Vector + vactor31 * splineRate,
             "p3Spline": nikunukiBasePoint1Vector + vactor31 * (1 - splineRate),
-            "p2Spline_sub": nikunukiBasePoint3Vector + vactor23 * (splineRate),
-            "p3Spline_sub": nikunukiBasePoint3Vector + vactor23 * (1 - splineRate),
+            "p2Spline_sub": nikunukiBasePoint3Vector + vactor23 * (1 - splineRate),
+            "p3Spline_sub": nikunukiBasePoint3Vector + vactor23 * (splineRate),
         }
 
 
@@ -678,12 +678,18 @@ def makeNikunuki(file, O, NikunukiObject):
         NikunukiObject["p3Spline_sub"],
     ]
     # AutoCadのスクリプトファイルを作成
+    color(file, 0, 0, 255)
     spline(file, splineArray1, O)
     spline(file, splineArray2, O)
     spline(file, splineArray3, O)
-    line(file, NikunukiObject["p1Spline"], NikunukiObject["p2Spline_sub"], O)
-    line(file, NikunukiObject["p2Spline"], NikunukiObject["p3Spline_sub"], O)
+    line(file, NikunukiObject["p1Spline"], NikunukiObject["p2Spline"], O)
+    line(file, NikunukiObject["p2Spline_sub"], NikunukiObject["p3Spline_sub"], O)
     line(file, NikunukiObject["p3Spline"], NikunukiObject["p1Spline_sub"], O)
+
+    color(file, 255, 0, 0)
+    line(file, NikunukiObject["p1"], NikunukiObject["p2"], O)
+    line(file, NikunukiObject["p2"], NikunukiObject["p3"], O)
+    line(file, NikunukiObject["p3"], NikunukiObject["p1"], O)
 
 
 def WriteText(file, O, text, height=20, angle=0):
@@ -1211,7 +1217,7 @@ for k in range(1, n + 1):  # range(1,n+1):				 	#根から k 枚目のリブ
             nikunukiBasePoint_u1_Zenenn,
             nikunukiBasePoint_u2_Zenenn,
             nikunukiBasePoint_d1_Zenenn,
-            0.05,
+            0.20,
         ).nikunukiObject,
     )
 
